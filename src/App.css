@@ -253,3 +253,30 @@
 		width: 100%;
 	}
 }
+
+.header-actions {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+}
+
+.refresh-button {
+	padding: 11px 14px;
+	border: 1px solid #333;
+	border-radius: 8px;
+	background: #242424;
+	color: white;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.refresh-button:hover {
+	background: #303030;
+}
+
+@media (max-width: 650px) {
+	.header-actions {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}

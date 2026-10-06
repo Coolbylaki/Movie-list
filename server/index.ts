@@ -1,10 +1,13 @@
 import express from "express";
 import fs from "node:fs/promises";
 import dotenv from "dotenv";
+import path from "node:path";
 
 dotenv.config({ path: ".env.local" });
 
 const app = express();
+app.use(express.json());
+
 const PORT = 3001;
 
 const MOVIE_FOLDER = process.env.MOVIE_FOLDER;
@@ -17,6 +20,32 @@ if (!TMDB_TOKEN) {
 
 if (!MOVIE_FOLDER) {
 	throw new Error("MOVIE_FOLDER is missing from .env.local");
+}
+
+const CACHE_FILE = path.join(process.cwd(), "movie-cache.json");
+
+type CachedMovie = {
+	folderName: string;
+	title: string;
+	year: number | null;
+	overview?: string;
+	rating?: number;
+	posterPath?: string | null;
+	tmdbId?: number;
+	matched: boolean;
+};
+
+async function readCache(): Promise<CachedMovie[]> {
+	try {
+		const data = await fs.readFile(CACHE_FILE, "utf-8");
+		return JSON.parse(data);
+	} catch {
+		return [];
+	}
+}
+
+async function writeCache(movies: CachedMovie[]) {
+	await fs.writeFile(CACHE_FILE, JSON.stringify(movies, null, 2), "utf-8");
 }
 
 function parseMovieName(folderName: string) {
@@ -47,8 +76,16 @@ app.get("/api/movies", async (_req, res) => {
 			.filter((entry) => entry.isDirectory())
 			.map((entry) => parseMovieName(entry.name));
 
+		const cache = await readCache();
+
 		const movies = await Promise.all(
 			parsedMovies.map(async (movie) => {
+				const cachedMovie = cache.find((item) => item.folderName === movie.folderName);
+
+				if (cachedMovie) {
+					return cachedMovie;
+				}
+
 				const params = new URLSearchParams({
 					query: movie.title,
 				});
@@ -98,6 +135,8 @@ app.get("/api/movies", async (_req, res) => {
 		);
 
 		movies.sort((a, b) => a.title.localeCompare(b.title));
+
+		await writeCache(movies);
 
 		res.json(movies);
 	} catch (error) {
@@ -172,6 +211,22 @@ app.get("/api/movies/:id", async (req, res) => {
 
 		res.status(500).json({
 			error: "Could not load movie details",
+		});
+	}
+});
+
+app.post("/api/movies/refresh", async (_req, res) => {
+	try {
+		await fs.writeFile(CACHE_FILE, "[]", "utf-8");
+
+		res.json({
+			success: true,
+		});
+	} catch (error) {
+		console.error(error);
+
+		res.status(500).json({
+			error: "Could not clear cache",
 		});
 	}
 });

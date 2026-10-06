@@ -57,6 +57,25 @@ function App() {
 		}
 	}
 
+	async function refreshLibrary() {
+		setLoading(true);
+
+		try {
+			await fetch("/api/movies/refresh", {
+				method: "POST",
+			});
+
+			const response = await fetch("/api/movies");
+			const data: Movie[] = await response.json();
+
+			setMovies(data);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setLoading(false);
+		}
+	}
+
 	useEffect(() => {
 		async function loadMovies() {
 			try {
@@ -108,13 +127,19 @@ function App() {
 					</p>
 				</div>
 
-				<input
-					className="search-input"
-					type="text"
-					placeholder="Search movies..."
-					value={search}
-					onChange={(event) => setSearch(event.target.value)}
-				/>
+				<div className="header-actions">
+					<input
+						className="search-input"
+						type="text"
+						placeholder="Search movies..."
+						value={search}
+						onChange={(event) => setSearch(event.target.value)}
+					/>
+
+					<button className="refresh-button" onClick={refreshLibrary}>
+						Refresh Library
+					</button>
+				</div>
 			</header>
 
 			<main className="movie-grid">
