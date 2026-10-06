@@ -32,6 +32,7 @@ function App() {
 	const [selectedMovie, setSelectedMovie] = useState<MovieDetails | null>(null);
 	const [detailsLoading, setDetailsLoading] = useState(false);
 	const [search, setSearch] = useState("");
+	const [sortBy, setSortBy] = useState<"title" | "year" | "rating">("title");
 
 	async function openMovie(movie: Movie) {
 		if (!movie.tmdbId) {
@@ -105,17 +106,30 @@ function App() {
 		return <div className="app">Error: {error}</div>;
 	}
 
-	const filteredMovies = movies.filter((movie) => {
-		const query = search.toLowerCase().trim();
+	const filteredMovies = movies
+		.filter((movie) => {
+			const query = search.toLowerCase().trim();
 
-		if (!query) {
-			return true;
-		}
+			if (!query) {
+				return true;
+			}
 
-		return (
-			movie.title.toLowerCase().includes(query) || movie.year?.toString().includes(query)
-		);
-	});
+			return (
+				movie.title.toLowerCase().includes(query) ||
+				movie.year?.toString().includes(query)
+			);
+		})
+		.sort((a, b) => {
+			if (sortBy === "year") {
+				return (b.year ?? 0) - (a.year ?? 0);
+			}
+
+			if (sortBy === "rating") {
+				return (b.rating ?? 0) - (a.rating ?? 0);
+			}
+
+			return a.title.localeCompare(b.title);
+		});
 
 	return (
 		<div className="app">
@@ -135,6 +149,17 @@ function App() {
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
 					/>
+
+					<select
+						className="sort-select"
+						value={sortBy}
+						onChange={(event) =>
+							setSortBy(event.target.value as "title" | "year" | "rating")
+						}>
+						<option value="title">Title</option>
+						<option value="year">Newest</option>
+						<option value="rating">Rating</option>
+					</select>
 
 					<button className="refresh-button" onClick={refreshLibrary}>
 						Refresh Library

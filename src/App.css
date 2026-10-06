@@ -280,3 +280,12 @@
 		align-items: stretch;
 	}
 }
+
+.sort-select {
+	padding: 11px 14px;
+	border: 1px solid #333;
+	border-radius: 8px;
+	background: #1b1b1b;
+	color: white;
+	font-size: 14px;
+}
