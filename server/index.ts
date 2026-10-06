@@ -137,6 +137,45 @@ app.get("/api/test-tmdb", async (_req, res) => {
 	}
 });
 
+app.get("/api/movies/:id", async (req, res) => {
+	try {
+		const response = await fetch(
+			`https://api.themoviedb.org/3/movie/${req.params.id}?append_to_response=external_ids`,
+			{
+				headers: {
+					Authorization: `Bearer ${TMDB_TOKEN}`,
+					Accept: "application/json",
+				},
+			},
+		);
+
+		if (!response.ok) {
+			throw new Error(`TMDB returned ${response.status}`);
+		}
+
+		const data = await response.json();
+
+		res.json({
+			id: data.id,
+			title: data.title,
+			year: data.release_date ? Number(data.release_date.slice(0, 4)) : null,
+			overview: data.overview,
+			rating: data.vote_average,
+			runtime: data.runtime,
+			genres: data.genres?.map((genre: { name: string }) => genre.name) ?? [],
+			posterPath: data.poster_path,
+			backdropPath: data.backdrop_path,
+			imdbId: data.external_ids?.imdb_id ?? null,
+		});
+	} catch (error) {
+		console.error(error);
+
+		res.status(500).json({
+			error: "Could not load movie details",
+		});
+	}
+});
+
 app.listen(PORT, () => {
 	console.log(`Movie server running at http://localhost:${PORT}`);
 });

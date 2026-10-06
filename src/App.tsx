@@ -12,10 +12,49 @@ type Movie = {
 	matched: boolean;
 };
 
+type MovieDetails = {
+	id: number;
+	title: string;
+	year: number | null;
+	overview: string;
+	rating: number;
+	runtime: number | null;
+	genres: string[];
+	posterPath: string | null;
+	backdropPath: string | null;
+	imdbId: string | null;
+};
+
 function App() {
 	const [movies, setMovies] = useState<Movie[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
+	const [selectedMovie, setSelectedMovie] = useState<MovieDetails | null>(null);
+	const [detailsLoading, setDetailsLoading] = useState(false);
+
+	async function openMovie(movie: Movie) {
+		if (!movie.tmdbId) {
+			return;
+		}
+
+		try {
+			setDetailsLoading(true);
+
+			const response = await fetch(`/api/movies/${movie.tmdbId}`);
+
+			if (!response.ok) {
+				throw new Error("Failed to load movie details");
+			}
+
+			const data: MovieDetails = await response.json();
+
+			setSelectedMovie(data);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setDetailsLoading(false);
+		}
+	}
 
 	useEffect(() => {
 		async function loadMovies() {
@@ -57,7 +96,10 @@ function App() {
 
 			<main className="movie-grid">
 				{movies.map((movie) => (
-					<article className="movie-card" key={movie.folderName}>
+					<article
+						className="movie-card"
+						key={movie.folderName}
+						onClick={() => openMovie(movie)}>
 						{movie.posterPath ? (
 							<img
 								className="poster"
@@ -86,6 +128,75 @@ function App() {
 					</article>
 				))}
 			</main>
+
+			{detailsLoading && (
+				<div className="modal-backdrop">
+					<div className="modal">
+						<p>Loading...</p>
+					</div>
+				</div>
+			)}
+
+			{selectedMovie && !detailsLoading && (
+				<div className="modal-backdrop" onClick={() => setSelectedMovie(null)}>
+					<div className="modal" onClick={(event) => event.stopPropagation()}>
+						<button className="close-button" onClick={() => setSelectedMovie(null)}>
+							×
+						</button>
+
+						{selectedMovie.backdropPath && (
+							<img
+								className="modal-backdrop-image"
+								src={`https://image.tmdb.org/t/p/w1280${selectedMovie.backdropPath}`}
+								alt=""
+							/>
+						)}
+
+						<div className="modal-content">
+							{selectedMovie.posterPath && (
+								<img
+									className="modal-poster"
+									src={`https://image.tmdb.org/t/p/w500${selectedMovie.posterPath}`}
+									alt={selectedMovie.title}
+								/>
+							)}
+
+							<div className="modal-info">
+								<h2>
+									{selectedMovie.title}
+									{selectedMovie.year && ` (${selectedMovie.year})`}
+								</h2>
+
+								<div className="details-meta">
+									<span>⭐ {selectedMovie.rating.toFixed(1)}</span>
+
+									{selectedMovie.runtime && <span>{selectedMovie.runtime} min</span>}
+								</div>
+
+								<div className="genres">
+									{selectedMovie.genres.map((genre) => (
+										<span key={genre}>{genre}</span>
+									))}
+								</div>
+
+								<p className="full-overview">
+									{selectedMovie.overview || "No description available."}
+								</p>
+
+								{selectedMovie.imdbId && (
+									<a
+										className="imdb-button"
+										href={`https://www.imdb.com/title/${selectedMovie.imdbId}/`}
+										target="_blank"
+										rel="noreferrer">
+										Open IMDb
+									</a>
+								)}
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
