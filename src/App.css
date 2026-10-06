@@ -221,3 +221,35 @@
 		height: 180px;
 	}
 }
+
+.search-input {
+	width: 280px;
+	max-width: 100%;
+	padding: 11px 14px;
+	border: 1px solid #333;
+	border-radius: 8px;
+	background: #1b1b1b;
+	color: white;
+	font-size: 15px;
+	outline: none;
+}
+
+.search-input:focus {
+	border-color: #666;
+}
+
+.search-input::placeholder {
+	color: #777;
+}
+
+@media (max-width: 650px) {
+	.header {
+		align-items: stretch;
+		flex-direction: column;
+		gap: 18px;
+	}
+
+	.search-input {
+		width: 100%;
+	}
+}

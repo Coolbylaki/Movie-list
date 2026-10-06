@@ -31,6 +31,7 @@ function App() {
 	const [error, setError] = useState("");
 	const [selectedMovie, setSelectedMovie] = useState<MovieDetails | null>(null);
 	const [detailsLoading, setDetailsLoading] = useState(false);
+	const [search, setSearch] = useState("");
 
 	async function openMovie(movie: Movie) {
 		if (!movie.tmdbId) {
@@ -85,17 +86,39 @@ function App() {
 		return <div className="app">Error: {error}</div>;
 	}
 
+	const filteredMovies = movies.filter((movie) => {
+		const query = search.toLowerCase().trim();
+
+		if (!query) {
+			return true;
+		}
+
+		return (
+			movie.title.toLowerCase().includes(query) || movie.year?.toString().includes(query)
+		);
+	});
+
 	return (
 		<div className="app">
 			<header className="header">
 				<div>
 					<h1>My Movie Library</h1>
-					<p>{movies.length} movies</p>
+					<p>
+						{filteredMovies.length} of {movies.length} movies
+					</p>
 				</div>
+
+				<input
+					className="search-input"
+					type="text"
+					placeholder="Search movies..."
+					value={search}
+					onChange={(event) => setSearch(event.target.value)}
+				/>
 			</header>
 
 			<main className="movie-grid">
-				{movies.map((movie) => (
+				{filteredMovies.map((movie) => (
 					<article
 						className="movie-card"
 						key={movie.folderName}
