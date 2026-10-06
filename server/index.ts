@@ -215,22 +215,6 @@ app.get("/api/movies/:id", async (req, res) => {
 	}
 });
 
-app.post("/api/movies/refresh", async (_req, res) => {
-	try {
-		await fs.writeFile(CACHE_FILE, "[]", "utf-8");
-
-		res.json({
-			success: true,
-		});
-	} catch (error) {
-		console.error(error);
-
-		res.status(500).json({
-			error: "Could not clear cache",
-		});
-	}
-});
-
 app.listen(PORT, () => {
 	console.log(`Movie server running at http://localhost:${PORT}`);
 });

@@ -62,11 +62,12 @@ function App() {
 		setLoading(true);
 
 		try {
-			await fetch("/api/movies/refresh", {
-				method: "POST",
-			});
-
 			const response = await fetch("/api/movies");
+
+			if (!response.ok) {
+				throw new Error("Failed to refresh library");
+			}
+
 			const data: Movie[] = await response.json();
 
 			setMovies(data);
