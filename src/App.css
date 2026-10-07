@@ -2,6 +2,12 @@
 	min-height: 100vh;
 }
 
+@media (max-width: 650px) {
+	.header h1 {
+		font-size: 32px;
+	}
+}
+
 .app {
 	width: min(1400px, calc(100% - 40px));
 	margin: 0 auto;
@@ -17,7 +23,17 @@
 
 .header h1 {
 	margin: 0;
-	font-size: 36px;
+	font-size: 42px;
+	font-weight: 800;
+	letter-spacing: -1.5px;
+
+	background: linear-gradient(90deg, #ffd6d6 0%, #b91c1c 55%, #450a0a 100%);
+
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+
+	text-shadow: 0 2px 12px rgba(185, 28, 28, 0.18);
 }
 
 .header p {
