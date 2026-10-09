@@ -50,9 +50,11 @@ Vite builds the React interface; it is not a separate production web server. Ele
 
 `dist`, `dist-desktop`, `release`, and `node_modules` are generated and excluded from Git. Build cleanup only removes `dist` and `dist-desktop`, not packaged apps or saved user data.
 
-## Original browser version
+## Version control and local data
 
-The original working version remains on `main` at commit `8b09fb1`. Old `.env.local` and `movie-cache.json` are preserved in the ignored `.local-backup` directory. To restore the original workflow, save further work, switch to `main`, restore those two local files to the project root, and install that branch's dependencies. The active Electron settings and cache remain separate in your Windows profile.
+The current Electron app is maintained on `main`, the repository's only active branch. Earlier versions remain in Git history.
+
+The ignored `.local-backup` directory contains old browser-version configuration and metadata retained locally. It is not used by the desktop app or included in its installer. Active settings and caches remain in your Windows user profile.
 
 ## Next improvements
 
