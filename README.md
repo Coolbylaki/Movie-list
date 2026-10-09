@@ -22,6 +22,7 @@ Your folder and token are remembered between launches. Anyone you share the app 
 ## Browse your movies
 
 - Search by title or year, and sort by title, newest year, or highest rating.
+- Combine genre, year, and minimum-rating filters to narrow your collection. **Clear filters** resets the filters while keeping your search. Unknown genre/year options let you find movies with missing metadata.
 - Select a movie to see its description, runtime, genres, and rating when available.
 - Select **Open movie folder** in the details window to open its local folder in Windows File Explorer. This also works for unmatched movies.
 - Select **Play movie** to open a video in your Windows default player, such as VLC. If multiple videos are found, choose a file and select **Play selected video**. Video files in subfolders are included; subtitles and other non-video files are ignored.
@@ -31,7 +32,9 @@ Your folder and token are remembered between launches. Anyone you share the app 
 
 Closing the window exits the app. It runs locally on your PC; the PC needs to be on to use it. Internet access is needed for TMDB lookups and online poster images.
 
-Additional filters, manual match correction, and remembered browsing preferences are planned and are not available yet.
+Manual match correction and remembered browsing preferences are planned and are not available yet.
+
+The first launch after adding genre filters fills in genre information for existing matches. These genres are cached for future launches. If a lookup fails, the movie remains available under **All genres** or **Unknown genre**; refresh to retry.
 
 ## Settings and troubleshooting
 

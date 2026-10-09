@@ -15,7 +15,7 @@ test('scan preserves cached matches, ignores files, parses names, and refreshes 
   await fs.mkdir(path.join(movies, 'Unknown movie'));
   await fs.writeFile(path.join(movies, 'ignore.mp4'), '');
   await fs.writeFile(cacheFile, JSON.stringify([
-    { folderName: 'The Matrix (1999)', title: 'The Matrix', year: 1999, matched: true, tmdbId: 603 },
+    { folderName: 'The Matrix (1999)', title: 'The Matrix', year: 1999, matched: true, tmdbId: 603, genres: ['Science Fiction'] },
     { folderName: 'Removed (2000)', title: 'Removed', year: 2000, matched: true },
   ]));
   const requests: string[] = [];
@@ -62,10 +62,40 @@ test('TMDB title/year lookup and detailed metadata remain compatible', async () 
     assert.equal(requests[0].searchParams.get('query'), 'Alien');
     assert.equal(requests[0].searchParams.get('year'), '1979');
     assert.equal(result[0].tmdbId, 348);
+    assert.deepEqual(result[0].genres, ['Horror']);
     const details = await library.loadDetails(348);
     assert.equal(details.runtime, 117);
     assert.deepEqual(details.genres, ['Horror']);
     assert.equal(details.imdbId, 'tt0078748');
+  } finally {
+    globalThis.fetch = originalFetch;
+    assert.equal(path.dirname(root), fixtureRoot);
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test('adds genres to old caches without rematching, retries failures, and reuses saved genres', async () => {
+  const fixtureRoot = path.resolve('release/test-fixtures');
+  await fs.mkdir(fixtureRoot, { recursive: true });
+  const root = await fs.mkdtemp(path.join(fixtureRoot, 'genres-'));
+  await fs.mkdir(path.join(root, 'Local title (2000)'));
+  const cacheFile = path.join(root, 'cache.json');
+  const saved = { folderName: 'Local title (2000)', title: 'Chosen match', year: 2001, tmdbId: 123, rating: 7.5, matched: true };
+  await fs.writeFile(cacheFile, JSON.stringify([saved]));
+  const originalFetch = globalThis.fetch;
+  let requests = 0;
+  globalThis.fetch = async input => {
+    assert.match(String(input), /\/movie\/123\?/);
+    requests++;
+    return requests === 1 ? new Response('', { status: 503 }) : new Response(JSON.stringify({ id: 123, genres: [{ name: 'Drama' }, { name: 'Mystery' }] }));
+  };
+  try {
+    const library = createLibrary({ movieFolder: root, tmdbToken: 'test', cacheFile });
+    assert.deepEqual(await library.loadMovies(), [saved], 'a temporary genre failure preserves the existing match');
+    assert.deepEqual(await library.loadMovies(), [{ ...saved, genres: ['Drama', 'Mystery'] }]);
+    await library.loadMovies();
+    assert.equal(requests, 2, 'genres are cached after a successful retry');
+    assert.deepEqual(JSON.parse(await fs.readFile(cacheFile, 'utf8')), [{ ...saved, genres: ['Drama', 'Mystery'] }]);
   } finally {
     globalThis.fetch = originalFetch;
     assert.equal(path.dirname(root), fixtureRoot);

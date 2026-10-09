@@ -57,7 +57,7 @@ export function createLibrary(options: LibraryOptions) {
             .filter((entry) => entry.isDirectory())
             .map((entry) => parseMovieName(entry.name));
         const cache = await readCache();
-        const movies = await Promise.all(parsedMovies.map(async (movie) => {
+        async function matchMovie(movie: (typeof parsedMovies)[number]): Promise<Movie> {
             const cachedMovie = cache.find((item) => item.folderName === movie.folderName);
             if (cachedMovie) {
                 return cachedMovie;
@@ -69,6 +69,7 @@ export function createLibrary(options: LibraryOptions) {
                 params.set("year", movie.year.toString());
             }
             const response = await fetch(`https://api.themoviedb.org/3/search/movie?${params.toString()}`, {
+                signal: AbortSignal.timeout(10000),
                 headers: {
                     Authorization: `Bearer ${options.tmdbToken}`,
                     Accept: "application/json",
@@ -100,7 +101,21 @@ export function createLibrary(options: LibraryOptions) {
                 tmdbId: match.id,
                 matched: true,
             };
-        }));
+        }
+        const movies: Movie[] = new Array(parsedMovies.length);
+        let nextIndex = 0;
+        async function worker() {
+            while (nextIndex < parsedMovies.length) {
+                const index = nextIndex++;
+                const movie = await matchMovie(parsedMovies[index]);
+                if (movie.matched && movie.tmdbId && !Array.isArray(movie.genres)) {
+                    try { movie.genres = (await loadDetails(movie.tmdbId)).genres; }
+                    catch { /* Keep the saved match usable; retry missing genres on the next refresh. */ }
+                }
+                movies[index] = movie;
+            }
+        }
+        await Promise.all(Array.from({ length: Math.min(4, parsedMovies.length) }, () => worker()));
         movies.sort((a, b) => a.title.localeCompare(b.title));
         await writeCache(movies);
         return movies;
@@ -109,6 +124,7 @@ export function createLibrary(options: LibraryOptions) {
         if (!Number.isSafeInteger(id) || id <= 0)
             throw new Error('Invalid movie ID');
         const response = await fetch(`https://api.themoviedb.org/3/movie/${id}?append_to_response=external_ids`, {
+            signal: AbortSignal.timeout(10000),
             headers: {
                 Authorization: `Bearer ${options.tmdbToken}`,
                 Accept: "application/json",

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Movie, MovieDetails } from '../shared/movies';
 import appIcon from '../resources/app.png';
 import { movieApi } from './lib/movieApi';
+import { emptyFilters, filterMovies, type LibraryFilters } from './lib/libraryFilters';
 import LibrarySettings from './components/LibrarySettings';
 import MovieCard from './components/MovieCard';
 import MovieDialog from './components/MovieDialog';
@@ -25,6 +26,7 @@ export default function App() {
   const [detailsError, setDetailsError] = useState('');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'title' | 'year' | 'rating'>('title');
+  const [filters, setFilters] = useState<LibraryFilters>(emptyFilters);
   const detailsRequest = useRef(0);
 
   useEffect(() => {
@@ -66,7 +68,12 @@ export default function App() {
   }
 
   const query = search.trim().toLowerCase();
-  const filteredMovies = movies.filter(movie => !query || movie.title.toLowerCase().includes(query) || movie.year?.toString().includes(query))
+  const hasFilters = Object.values(filters).some(Boolean);
+  const narrowed = Boolean(query) || hasFilters;
+  const genres = [...new Set(movies.flatMap(movie => movie.genres ?? []))].sort((a, b) => a.localeCompare(b));
+  const years = [...new Set(movies.flatMap(movie => movie.year === null ? [] : [movie.year]))].sort((a, b) => b - a);
+  function clearBrowsing() { setSearch(''); setFilters(emptyFilters); }
+  const filteredMovies = filterMovies(movies, search, filters)
     .sort((a, b) => sortBy === 'year' ? (b.year ?? 0) - (a.year ?? 0)
       : sortBy === 'rating' ? (b.rating ?? 0) - (a.rating ?? 0) : a.title.localeCompare(b.title));
 
@@ -96,9 +103,32 @@ export default function App() {
       </button>
     </div>
 
+    <div className="filter-bar" role="group" aria-label="Filter movies">
+      <div className="filter-field"><label htmlFor="genre-filter">Genre</label>
+        <select id="genre-filter" value={filters.genre} onChange={event => setFilters({ ...filters, genre: event.target.value })}>
+          <option value="">All genres</option>{genres.map(genre => <option key={genre} value={genre}>{genre}</option>)}
+          {filters.genre && filters.genre !== '__unknown__' && !genres.includes(filters.genre) && <option value={filters.genre}>{filters.genre}</option>}
+          <option value="__unknown__">Unknown genre</option>
+        </select>
+      </div>
+      <div className="filter-field"><label htmlFor="year-filter">Year</label>
+        <select id="year-filter" value={filters.year} onChange={event => setFilters({ ...filters, year: event.target.value })}>
+          <option value="">All years</option>{years.map(year => <option key={year} value={year}>{year}</option>)}
+          {filters.year && filters.year !== '__unknown__' && !years.includes(Number(filters.year)) && <option value={filters.year}>{filters.year}</option>}
+          <option value="__unknown__">Unknown year</option>
+        </select>
+      </div>
+      <div className="filter-field"><label htmlFor="rating-filter">Minimum rating</label>
+        <select id="rating-filter" value={filters.minimumRating} onChange={event => setFilters({ ...filters, minimumRating: event.target.value })}>
+          <option value="">Any rating</option>{[5, 6, 7, 8, 9].map(rating => <option key={rating} value={rating}>{rating}+ / 10</option>)}
+        </select>
+      </div>
+      <button className="button button-quiet clear-filters" disabled={!hasFilters} onClick={() => setFilters(emptyFilters)}><Icon name="close" />Clear filters</button>
+    </div>
+
     <main id="library" aria-busy={loading || refreshing}>
       <div className="collection-heading"><h2>Your collection</h2>
-        {!loading && <span className="collection-count" role="status">{query ? `${filteredMovies.length} of ${movies.length}` : movies.length} {filteredMovies.length === 1 && !query ? 'movie' : 'movies'}</span>}
+        {!loading && <span className="collection-count" role="status">{narrowed ? `${filteredMovies.length} of ${movies.length}` : movies.length} {filteredMovies.length === 1 && !narrowed ? 'movie' : 'movies'}</span>}
       </div>
       {error && <div className="notice notice-error" role="alert"><p>{error}</p>
         <button className="button" onClick={() => setSettingsOpen(true)}>Library settings</button>
@@ -106,10 +136,10 @@ export default function App() {
       </div>}
       {loading ? <div className="empty-state" role="status"><span className="loading-ring" /><h3>Loading your library</h3><p>Getting your collection ready…</p></div>
         : filteredMovies.length ? <div className="movie-grid">{filteredMovies.map(movie => <MovieCard key={movie.folderName} movie={movie} onOpen={() => void openMovie(movie)} />)}</div>
-        : !error && <div className="empty-state"><div className="empty-icon"><Icon name={query ? 'search' : 'film'} /></div>
-          <h3>{query ? 'No movies found' : 'Your collection starts here'}</h3>
-          <p>{query ? 'Try another title or year.' : 'Choose the folder containing your movie folders in Settings.'}</p>
-          <button className="button button-primary" onClick={() => query ? setSearch('') : setSettingsOpen(true)}>{query ? 'Clear search' : 'Choose movie folder'}</button>
+        : !error && <div className="empty-state"><div className="empty-icon"><Icon name={narrowed ? 'search' : 'film'} /></div>
+          <h3>{narrowed ? 'No movies found' : 'Your collection starts here'}</h3>
+          <p>{narrowed ? 'Try another search or adjust your filters.' : 'Choose the folder containing your movie folders in Settings.'}</p>
+          <button className="button button-primary" onClick={() => narrowed ? clearBrowsing() : setSettingsOpen(true)}>{narrowed ? 'Clear search and filters' : 'Choose movie folder'}</button>
         </div>}
     </main>
 

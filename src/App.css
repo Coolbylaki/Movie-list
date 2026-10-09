@@ -15,7 +15,13 @@
 .button-primary:hover:not(:disabled) { background: #7fe9de; border-color: #7fe9de; }
 .icon-button { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 7px; background: transparent; color: var(--muted); }
 .icon-button:hover { color: var(--text); background: var(--surface-raised); }
-.toolbar { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 13px; background: var(--surface); margin-bottom: 32px; }
+.toolbar { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 13px; background: var(--surface); margin-bottom: 14px; }
+.filter-bar { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+.filter-field { flex: 1; min-width: 150px; }
+.filter-field label { display: block; margin: 0 0 7px 2px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.filter-field select { width: 100%; height: 43px; padding: 0 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: inherit; font-size: 13px; cursor: pointer; }
+.filter-field select:focus-visible { border-color: var(--accent); }
+.clear-filters { flex: 0 0 auto; }
 .search-field { display: flex; align-items: center; flex: 1; min-width: 150px; height: 43px; gap: 10px; padding-left: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); color: var(--muted); }
 .search-field:focus-within { border-color: var(--accent); outline: 2px solid #52ded229; outline-offset: 1px; }
 .search-input { width: 100%; min-width: 0; height: 100%; padding: 0; border: 0; background: transparent; color: var(--text); font-size: 14px; outline: none; }
@@ -84,6 +90,8 @@
 .genres span { padding: 5px 9px; border: 1px solid #344650; border-radius: 6px; background: #1b2a31; color: #c8d6dd; font-size: 11px; }
 .full-overview { margin: 0 0 24px; font-size: 14px; line-height: 1.8; color: #c3ced7; }
 .movie-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.button.imdb-button { background: #eac35e; border-color: #eac35e; color: #17160e; }
+.button.imdb-button:hover { background: #f5d886; border-color: #f5d886; }
 .video-picker { margin-top: 18px; }
 .video-picker label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
 .video-picker select { width: 100%; min-height: 43px; padding: 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-raised); color: var(--text); font: inherit; font-size: 13px; }

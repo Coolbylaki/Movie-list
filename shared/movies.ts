@@ -7,6 +7,7 @@ export type Movie = {
 	posterPath?: string | null;
 	tmdbId?: number;
 	matched: boolean;
+	genres?: string[];
 };
 
 

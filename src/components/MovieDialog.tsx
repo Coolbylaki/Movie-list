@@ -74,7 +74,7 @@ export default function MovieDialog({ movie, details, loading, error, onClose }:
         <div className="movie-actions">
           <button className="button" onClick={() => void play()} disabled={playing || Boolean(videos && !selectedVideo)}><Icon name="play" />{playing ? 'Opening…' : videos ? 'Play selected video' : 'Play movie'}</button>
           <button className="button" onClick={() => void openFolder()} disabled={openingFolder}><Icon name="folder" />{openingFolder ? 'Opening…' : 'Open movie folder'}</button>
-          {details?.imdbId && <a className="button" href={`https://www.imdb.com/title/${details.imdbId}/`} target="_blank" rel="noreferrer"><Icon name="arrow" />Open IMDb</a>}
+          {details?.imdbId && <a className="button imdb-button" href={`https://www.imdb.com/title/${details.imdbId}/`} target="_blank" rel="noreferrer"><Icon name="arrow" />Open IMDb</a>}
         </div>
       </div>
     </div>
