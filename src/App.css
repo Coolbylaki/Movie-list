@@ -143,6 +143,10 @@
 .saved-indicator::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
 .settings-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 22px; border-top: 1px solid var(--border); }
 .settings-panel .notice { margin-bottom: 0; }
+.app-credits { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--border); }
+.app-credits h3 { margin: 0 0 14px; font-size: 13px; font-weight: 600; }
+.app-credits img { display: block; width: 80px; height: auto; margin-bottom: 12px; }
+.app-credits p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
 
 @media (max-width: 1050px) {
   .app { width: calc(100% - 48px); padding-top: 26px; }

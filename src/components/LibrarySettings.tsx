@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import Dialog from './Dialog';
 import Icon from './Icon';
+import tmdbLogo from '../../resources/tmdb-logo.svg';
 
 export default function LibrarySettings({ onSaved, onClose }: { onSaved: () => void; onClose: () => void }) {
   const titleId = useId();
@@ -53,6 +54,12 @@ export default function LibrarySettings({ onSaved, onClose }: { onSaved: () => v
           <button className="button button-primary" disabled={!ready || saving}>{saving && <Icon name="refresh" className="spinning" />}{saving ? 'Saving…' : 'Save settings'}</button>
         </div>
       </form>
+      <section className="app-credits" aria-label="Credits">
+        <h3>Credits</h3>
+        <img src={tmdbLogo} alt="TMDB" />
+        <p>Movie information and posters provided by TMDB.</p>
+        <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+      </section>
     </section>
   </Dialog>;
 }

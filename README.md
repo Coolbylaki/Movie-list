@@ -4,9 +4,9 @@ Browse your local movie collection in a Windows desktop app, with posters, descr
 
 ## Install and launch
 
-Use **Movie Library Setup 0.1.0.exe** from the built `release` folder to install the app. The installer creates desktop and Start menu shortcuts and provides a Windows uninstaller. The app includes everything it needs; you do not need Node.js, a browser, or a separate server.
+Use **Movie Library Setup 1.0.0.exe** from the built `release` folder to install the app. The installer creates desktop and Start menu shortcuts and provides a Windows uninstaller. The app includes everything it needs; you do not need Node.js, a browser, or a separate server.
 
-If someone shares the app with you, ask for the installer. Build files are not currently published as GitHub release downloads. The app is unsigned, so Windows may show a publisher warning.
+Download **Movie Library Setup 1.0.0.exe** from the [v1.0.0 release](https://github.com/Coolbylaki/Movie-list/releases/tag/v1.0.0). Choose the installer under Assets; the source-code archives are for development. The app is unsigned, so Windows may show a publisher warning.
 
 You can also run **Movie Library.exe** from `release/win-unpacked`. Keep that entire folder together. This is useful while testing updates; the current development desktop shortcut launches this copy. Installing provides a normal installation location, but the features are the same.
 
@@ -48,6 +48,10 @@ If a movie is missing, check that it has its own subfolder directly inside the s
 Updates are manual: install a newly built installer or replace the complete unpacked app folder. There is no automatic updater.
 
 If playback opens a different player, set VLC as the default Windows app for the relevant video file type. Movie Library follows your Windows file associations; it does not change them. Supported extensions: MKV, MP4, AVI, MOV, M4V, WEBM, WMV, MPG, MPEG, TS, M2TS, FLV, OGV, and VOB.
+
+## Credits
+
+Movie information and posters are provided by [TMDB](https://www.themoviedb.org). This product uses the TMDB API but is not endorsed or certified by TMDB. The TMDB logo is included for attribution under [TMDB's branding requirements](https://developer.themoviedb.org/docs/faq); it remains TMDB's property.
 
 ## Development
 
