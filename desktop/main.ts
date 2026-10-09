@@ -8,8 +8,9 @@ import { createLibrary } from '../server/library.js';
 
 app.setName('Movie Library');
 app.setPath('userData', path.join(app.getPath('appData'), 'Movie Library'));
-const smoke = process.argv.includes('--smoke-test');
-if (smoke) app.setPath('userData', path.resolve('release/smoke-profile'));
+const verifySettings = process.argv.includes('--verify-settings');
+const smoke = process.argv.includes('--smoke-test') || verifySettings;
+if (smoke && !verifySettings) app.setPath('userData', path.resolve('release/smoke-profile'));
 const dataDir = app.getPath('userData');
 const settingsFile = path.join(dataDir, 'settings.json');
 type Settings = { movieFolder: string; encryptedToken: string };
@@ -101,7 +102,7 @@ async function createWindow() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       return { bridge: true, hasToken: settings.hasToken, movies: movies.length, cards: document.querySelectorAll('.movie-card').length, title: document.title };
     })()`);
-    await fs.writeFile(path.resolve('desktop-smoke.json'), JSON.stringify(result, null, 2));
+    await fs.writeFile(path.resolve('desktop-smoke.json'), JSON.stringify({ ...result, settingsDirectory: dataDir }, null, 2));
     await fs.writeFile(path.resolve('desktop-smoke.png'), (await window.webContents.capturePage()).toPNG());
     app.quit();
   }
