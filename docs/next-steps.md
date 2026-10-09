@@ -2,8 +2,8 @@
 
 Add and test each feature separately before moving to the next one.
 
-1. **Open movie folder**: implemented in the movie details window, including unmatched movies. Opens the original local folder in Windows File Explorer and reports missing folders. Awaiting user testing.
-2. **Play movie**: open video files in the Windows default player (VLC on this PC). Let the user choose when a folder contains multiple videos.
+1. **Open movie folder**: complete and confirmed working by the user. Available for unmatched movies as well.
+2. **Play movie**: implemented using the Windows default player (VLC on this PC). Includes videos in subfolders and a file selector when multiple videos are found. Awaiting user testing.
 3. **Filters**: filter the collection by genre, year, and rating.
 4. **Correct movie matches**: search TMDB, choose the correct movie, and save the choice for that folder. Include unmatched movies.
 5. **Remember browsing preferences**: restore the selected sort and filters between launches.

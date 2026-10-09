@@ -7,4 +7,6 @@ export const movieApi = {
   loadMovies: async () => desktopApi().loadMovies(),
   loadDetails: async (id: number) => desktopApi().loadDetails(id),
   openMovieFolder: async (folderName: string) => desktopApi().openMovieFolder(folderName),
+  listMovieVideos: async (folderName: string) => desktopApi().listMovieVideos(folderName),
+  playMovieVideo: async (folderName: string, relativePath: string) => desktopApi().playMovieVideo(folderName, relativePath),
 };

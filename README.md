@@ -24,13 +24,14 @@ Your folder and token are remembered between launches. Anyone you share the app 
 - Search by title or year, and sort by title, newest year, or highest rating.
 - Select a movie to see its description, runtime, genres, and rating when available.
 - Select **Open movie folder** in the details window to open its local folder in Windows File Explorer. This also works for unmatched movies.
+- Select **Play movie** to open a video in your Windows default player, such as VLC. If multiple videos are found, choose a file and select **Play selected video**. Video files in subfolders are included; subtitles and other non-video files are ignored.
 - Select **Open IMDb** when a link is available.
 - Use **Refresh** after adding or removing movie folders. Cached matches are reused.
 - Use **Library settings** to change the library folder or replace the token.
 
 Closing the window exits the app. It runs locally on your PC; the PC needs to be on to use it. Internet access is needed for TMDB lookups and online poster images.
 
-Playback, additional filters, manual match correction, and remembered browsing preferences are planned and are not available yet.
+Additional filters, manual match correction, and remembered browsing preferences are planned and are not available yet.
 
 ## Settings and troubleshooting
 
@@ -39,6 +40,8 @@ Settings and metadata caches are stored in `%APPDATA%\Movie Library`. The TMDB t
 If a movie is missing, check that it has its own subfolder directly inside the selected library, then refresh. If a folder cannot be opened, check that the drive is connected and the folder still exists. If metadata cannot load, check your internet connection and TMDB token. A wrong movie match cannot currently be corrected in the interface.
 
 Updates are manual: install a newly built installer or replace the complete unpacked app folder. There is no automatic updater.
+
+If playback opens a different player, set VLC as the default Windows app for the relevant video file type. Movie Library follows your Windows file associations; it does not change them. Supported extensions: MKV, MP4, AVI, MOV, M4V, WEBM, WMV, MPG, MPEG, TS, M2TS, FLV, OGV, and VOB.
 
 ## Development
 
