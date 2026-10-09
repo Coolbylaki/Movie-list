@@ -51,6 +51,7 @@ export default function MovieDialog({ movie, details, loading, error, onClose, o
   const data = details ?? movie;
   return <Dialog titleId={titleId} onClose={onClose} className="movie-dialog">
     {editingMatch ? <MovieMatchEditor movie={movie} titleId={titleId} onCancel={() => setEditingMatch(false)} onSaved={result => { onMatchSaved(result); setEditingMatch(false); setMatchSaved(true); }} /> : <>
+    <button className="button match-corner-button" onClick={() => setEditingMatch(true)}><Icon name="search" />Correct match</button>
     {details?.backdropPath && <div className="detail-hero"><img className="modal-backdrop-image" src={`https://image.tmdb.org/t/p/w1280${details.backdropPath}`} alt="" /></div>}
     <div className={`modal-content ${details?.backdropPath ? 'has-backdrop' : ''}`}>
       {data.posterPath && <img className="modal-poster" src={`https://image.tmdb.org/t/p/w500${data.posterPath}`} alt="" />}
@@ -80,7 +81,6 @@ export default function MovieDialog({ movie, details, loading, error, onClose, o
           <button className="button" onClick={() => void play()} disabled={playing || Boolean(videos && !selectedVideo)}><Icon name="play" />{playing ? 'Opening…' : videos ? 'Play selected video' : 'Play movie'}</button>
           <button className="button" onClick={() => void openFolder()} disabled={openingFolder}><Icon name="folder" />{openingFolder ? 'Opening…' : 'Open movie folder'}</button>
           {details?.imdbId && <a className="button imdb-button" href={`https://www.imdb.com/title/${details.imdbId}/`} target="_blank" rel="noreferrer"><Icon name="arrow" />Open IMDb</a>}
-          <button className="button button-quiet" onClick={() => setEditingMatch(true)}><Icon name="search" />Correct match</button>
         </div>
       </div>
     </div>

@@ -75,6 +75,9 @@
 .modal { width: min(900px, calc(100% - 48px)); max-height: calc(100dvh - 64px); margin: auto; padding: 0; overflow-x: hidden; border: 1px solid #3a4754; border-radius: 18px; background: var(--surface); color: var(--text); box-shadow: 0 24px 100px #0009; }
 .modal::backdrop { background: #04080bd9; backdrop-filter: blur(7px); }
 .close-button { position: absolute; top: 16px; right: 16px; z-index: 3; width: 36px; height: 36px; border: 1px solid #ffffff2b; background: #0e161de0; color: #e6f0f4; }
+.button.match-corner-button { position: absolute; top: 16px; left: 16px; z-index: 3; height: 36px; min-height: 36px; padding: 0 12px; border-color: #ffffff2b; background: #0e161de0; color: #e6f0f4; }
+.button.match-corner-button:hover { background: #26333ef2; border-color: #465b6b; }
+.movie-dialog .modal-content:not(.has-backdrop) { padding-top: 82px; }
 .detail-hero { position: relative; height: 260px; }
 .detail-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--surface), #141a2040 75%); }
 .modal-backdrop-image { display: block; width: 100%; height: 100%; object-fit: cover; }
