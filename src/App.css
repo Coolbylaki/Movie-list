@@ -25,6 +25,7 @@
 .sort-field { display: flex; align-items: center; gap: 7px; padding-left: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); color: var(--muted); }
 .sort-field:focus-within { border-color: var(--accent); }
 .sort-select { min-height: 41px; width: 150px; padding: 0 10px 0 0; border: 0; background: var(--background); color: var(--text); font-size: 13px; cursor: pointer; border-radius: 8px; }
+.sort-select:focus-visible { outline: none; }
 .collection-heading { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
 .collection-heading h2 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -.3px; }
 .collection-count { padding: 4px 9px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--muted); font-size: 12px; }
