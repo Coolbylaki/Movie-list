@@ -1,0 +1,5 @@
+Generated with the built-in imagegen tool; approved by the user.
+
+Use case: logo-brand. A Windows desktop app icon for Movie Library: a softly rounded film frame with chunky perforations and a central play symbol. A simple, bold silhouette with subtle satin bevel and dimensional lighting. Bright cyan blending through teal into mint, charcoal inset, transparent outer background and negative spaces. Designed for a black Windows desktop and recognizable at 32 and 48 pixels. No text, watermark, mockup, or extra objects.
+
+app.png is the approved original raster asset. app.ico is the Windows multi-resolution derivative, produced by scripts/build-icon.ps1.

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { createLibrary } from '../server/library.js';
+import { createLibrary } from '../desktop/services/library.js';
 
 test('scan preserves cached matches, ignores files, parses names, and refreshes removed folders', async () => {
   const fixtureRoot = path.resolve('release/test-fixtures');
@@ -36,7 +36,11 @@ test('scan preserves cached matches, ignores files, parses names, and refreshes 
     await library.loadMovies();
     assert.equal(requests.length, 1, 'second scan reuses the cache');
     await assert.rejects(() => library.loadDetails(-1), /Invalid movie ID/);
-  } finally { globalThis.fetch = originalFetch; }
+  } finally {
+    globalThis.fetch = originalFetch;
+    assert.equal(path.dirname(root), fixtureRoot);
+    await fs.rm(root, { recursive: true, force: true });
+  }
 });
 
 test('TMDB title/year lookup and detailed metadata remain compatible', async () => {
@@ -62,5 +66,9 @@ test('TMDB title/year lookup and detailed metadata remain compatible', async () 
     assert.equal(details.runtime, 117);
     assert.deepEqual(details.genres, ['Horror']);
     assert.equal(details.imdbId, 'tt0078748');
-  } finally { globalThis.fetch = originalFetch; }
+  } finally {
+    globalThis.fetch = originalFetch;
+    assert.equal(path.dirname(root), fixtureRoot);
+    await fs.rm(root, { recursive: true, force: true });
+  }
 });

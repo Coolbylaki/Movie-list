@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import type { Movie, MovieDetails } from '../shared/movies.js';
+import type { Movie, MovieDetails } from '../../shared/movies.js';
 export type LibraryOptions = {
     movieFolder: string;
     tmdbToken: string;

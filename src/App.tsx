@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 import type { Movie, MovieDetails } from '../shared/movies';
-import { movieApi } from './movieApi';
-import DesktopSettings from './DesktopSettings';
+import { movieApi } from './lib/movieApi';
+import LibrarySettings from './components/LibrarySettings';
 
 function App() {
 	const [settingsOpen, setSettingsOpen] = useState(false);
@@ -68,7 +68,7 @@ function App() {
 	}
 
 	if (error) {
-		return <div className="app"><p role="alert">{error}</p>{window.desktop && <DesktopSettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} />}<button className="refresh-button" onClick={refreshLibrary}>Retry</button></div>;
+		return <div className="app"><p role="alert">{error}</p>{window.desktop && <LibrarySettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} />}<button className="refresh-button" onClick={refreshLibrary}>Retry</button></div>;
 	}
 
 	const filteredMovies = movies
@@ -133,7 +133,7 @@ function App() {
 				</div>
 			</header>
 
-			{settingsOpen && <DesktopSettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} onClose={() => setSettingsOpen(false)} />}
+ {settingsOpen && <LibrarySettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} onClose={() => setSettingsOpen(false)} />}
  <main className="movie-grid">
 				{filteredMovies.map((movie) => (
 					<article

@@ -4,5 +4,5 @@
     "moduleResolution": "NodeNext", "types": ["node"], "strict": true,
     "skipLibCheck": true, "outDir": "dist-desktop", "rootDir": "."
   },
-  "include": ["desktop/**/*.ts", "server/library.ts", "shared/**/*.ts"]
+  "include": ["desktop/**/*.ts", "shared/**/*.ts"]
 }

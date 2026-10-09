@@ -3,14 +3,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
-import dotenv from 'dotenv';
-import { createLibrary } from '../server/library.js';
+import { createLibrary } from './services/library.js';
 
 app.setName('Movie Library');
+if (process.platform === 'win32') app.setAppUserModelId('com.coolbylaki.movielibrary');
 app.setPath('userData', path.join(app.getPath('appData'), 'Movie Library'));
 const verifySettings = process.argv.includes('--verify-settings');
-const smoke = process.argv.includes('--smoke-test') || verifySettings;
-if (smoke && !verifySettings) app.setPath('userData', path.resolve('release/smoke-profile'));
+const smoke = verifySettings;
 const dataDir = app.getPath('userData');
 const settingsFile = path.join(dataDir, 'settings.json');
 type Settings = { movieFolder: string; encryptedToken: string };
@@ -41,14 +40,6 @@ async function initializeSettings() {
   try { settings = JSON.parse(await fs.readFile(settingsFile, 'utf8')); return; }
   catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw new Error('Could not read saved desktop settings.', { cause: error });
-  }
-  // Migrate local development settings once. Credentials never go into the installer.
-  if (!app.isPackaged) {
-    const env = dotenv.parse(await fs.readFile(path.join(app.getAppPath(), '.env.local')).catch(() => ''));
-    if (env.MOVIE_FOLDER && env.TMDB_TOKEN && safeStorage.isEncryptionAvailable()) {
-      await persist({ movieFolder: env.MOVIE_FOLDER, encryptedToken: safeStorage.encryptString(env.TMDB_TOKEN).toString('base64') });
-      await fs.copyFile(path.join(app.getAppPath(), 'movie-cache.json'), cacheFile(settings.movieFolder)).catch(() => {});
-    }
   }
 }
 function registerHandlers() {
@@ -84,7 +75,7 @@ async function createWindow() {
   window = new BrowserWindow({
     title: 'Movie Library', width: 1400, height: 950, minWidth: 700, minHeight: 500,
     backgroundColor: '#111111', show: false, autoHideMenuBar: true,
-    icon: path.join(app.getAppPath(), 'Icon/movie-library-black-icon.ico'),
+    icon: path.join(app.getAppPath(), 'resources/app.ico'),
     webPreferences: { preload: path.join(app.getAppPath(), 'desktop/preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   window.webContents.setWindowOpenHandler(({ url }) => {
@@ -102,8 +93,10 @@ async function createWindow() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       return { bridge: true, hasToken: settings.hasToken, movies: movies.length, cards: document.querySelectorAll('.movie-card').length, title: document.title };
     })()`);
-    await fs.writeFile(path.resolve('desktop-smoke.json'), JSON.stringify({ ...result, settingsDirectory: dataDir }, null, 2));
-    await fs.writeFile(path.resolve('desktop-smoke.png'), (await window.webContents.capturePage()).toPNG());
+    const checksDir = path.resolve('release/checks');
+    await fs.mkdir(checksDir, { recursive: true });
+    await fs.writeFile(path.join(checksDir, 'desktop.json'), JSON.stringify({ ...result, settingsDirectory: dataDir }, null, 2));
+    await fs.writeFile(path.join(checksDir, 'desktop.png'), (await window.webContents.capturePage()).toPNG());
     app.quit();
   }
 }
@@ -112,7 +105,6 @@ else {
   app.on('second-instance', () => { if (window?.isMinimized()) window.restore(); window?.focus(); });
   app.whenReady().then(async () => {
     await initializeSettings();
-    if (process.argv.includes('--migrate-settings') && !app.isPackaged) { app.quit(); return; }
     registerHandlers(); await createWindow();
   }).catch(error => {
     if (!smoke) dialog.showErrorBox('Movie Library could not start', error instanceof Error ? error.message : 'Unexpected startup error');

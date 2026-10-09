@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export default function DesktopSettings({ onSaved, onClose }: { onSaved: () => void; onClose?: () => void }) {
+export default function LibrarySettings({ onSaved, onClose }: { onSaved: () => void; onClose?: () => void }) {
   const [movieFolder, setMovieFolder] = useState('');
   const [tmdbToken, setTmdbToken] = useState('');
   const [hasToken, setHasToken] = useState(false);
