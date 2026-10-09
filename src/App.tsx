@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Movie, MovieDetails } from '../shared/movies';
+import type { Movie, MovieDetails, SavedMovieMatch } from '../shared/movies';
 import appIcon from '../resources/app.png';
 import { movieApi } from './lib/movieApi';
 import { emptyFilters, filterMovies, type LibraryFilters } from './lib/libraryFilters';
@@ -28,6 +28,7 @@ export default function App() {
   const [sortBy, setSortBy] = useState<'title' | 'year' | 'rating'>('title');
   const [filters, setFilters] = useState<LibraryFilters>(emptyFilters);
   const detailsRequest = useRef(0);
+  const activeDialogFolder = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -46,6 +47,7 @@ export default function App() {
   }
 
   async function openMovie(movie: Movie) {
+    activeDialogFolder.current = movie.folderName;
     const request = ++detailsRequest.current;
     setSelectedMovie(movie);
     setDetails(null);
@@ -63,8 +65,19 @@ export default function App() {
   }
 
   function closeMovie() {
+    activeDialogFolder.current = null;
     ++detailsRequest.current;
     setSelectedMovie(null);
+  }
+
+  function applyMatch(result: SavedMovieMatch) {
+    setMovies(movies => movies.map(movie => movie.folderName === result.movie.folderName ? result.movie : movie));
+    if (activeDialogFolder.current !== result.movie.folderName) return;
+    ++detailsRequest.current;
+    setSelectedMovie(result.movie);
+    setDetails(result.details);
+    setDetailsLoading(false);
+    setDetailsError('');
   }
 
   const query = search.trim().toLowerCase();
@@ -144,6 +157,6 @@ export default function App() {
     </main>
 
     {settingsOpen && <LibrarySettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} onClose={() => setSettingsOpen(false)} />}
-    {selectedMovie && <MovieDialog movie={selectedMovie} details={details} loading={detailsLoading} error={detailsError} onClose={closeMovie} />}
+    {selectedMovie && <MovieDialog movie={selectedMovie} details={details} loading={detailsLoading} error={detailsError} onClose={closeMovie} onMatchSaved={applyMatch} />}
   </div>;
 }

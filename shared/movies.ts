@@ -16,3 +16,6 @@ export type MovieDetails = {
  runtime: number | null; genres: string[]; posterPath: string | null;
  backdropPath: string | null; imdbId: string | null;
 };
+
+export type MovieMatch = { id: number; title: string; year: number | null; overview: string; posterPath: string | null };
+export type SavedMovieMatch = { movie: Movie; details: MovieDetails };

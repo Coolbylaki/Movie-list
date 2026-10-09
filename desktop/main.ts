@@ -17,6 +17,12 @@ type Settings = { movieFolder: string; encryptedToken: string };
 let settings: Settings = { movieFolder: '', encryptedToken: '' };
 let window: BrowserWindow | null = null;
 let pendingScan: Promise<unknown> | null = null;
+let pendingLibraryChange: Promise<unknown> = Promise.resolve();
+function queueLibraryChange<T>(action: () => Promise<T>): Promise<T> {
+  const pending = pendingLibraryChange.then(action);
+  pendingLibraryChange = pending.catch(() => {});
+  return pending;
+}
 const rendererUrl = pathToFileURL(path.join(app.getAppPath(), 'dist/index.html')).href;
 
 function cacheFile(folder: string) {
@@ -52,10 +58,12 @@ function registerHandlers() {
     });
   };
   handle('library:movies', () => {
-    if (!pendingScan) pendingScan = library().loadMovies().finally(() => { pendingScan = null; });
+    if (!pendingScan) pendingScan = queueLibraryChange(() => library().loadMovies()).finally(() => { pendingScan = null; });
     return pendingScan;
   });
   handle('library:details', (id: number) => library().loadDetails(id));
+  handle('library:search-matches', (query: string, year?: number) => library().searchMatches(query, year));
+  handle('library:correct-match', (folderName: string, id: number) => queueLibraryChange(() => library().correctMatch(folderName, id)));
   handle('library:open-folder', (folderName: string) => openMovieFolder(settings.movieFolder, folderName, folder => shell.openPath(folder)));
   handle('library:videos', (folderName: string) => listMovieVideos(settings.movieFolder, folderName));
   handle('library:play', (folderName: string, relativePath: string) => playMovieVideo(settings.movieFolder, folderName, relativePath, file => shell.openPath(file)));
@@ -71,8 +79,7 @@ function registerHandlers() {
     if (!safeStorage.isEncryptionAvailable()) throw new Error('Secure token storage is unavailable');
     const encryptedToken = input.tmdbToken.trim() ? safeStorage.encryptString(input.tmdbToken.trim()).toString('base64') : settings.encryptedToken;
     if (!encryptedToken) throw new Error('A TMDB read access token is required');
-    await pendingScan;
-    await persist({ movieFolder, encryptedToken });
+    await queueLibraryChange(() => persist({ movieFolder, encryptedToken }));
   });
 }
 async function createWindow() {

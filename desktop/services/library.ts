@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
-import type { Movie, MovieDetails } from '../../shared/movies.js';
+import type { Movie, MovieDetails, MovieMatch, SavedMovieMatch } from '../../shared/movies.js';
+import { resolveMovieFolder } from './local-files.js';
 export type LibraryOptions = {
     movieFolder: string;
     tmdbToken: string;
@@ -32,7 +33,8 @@ export function createLibrary(options: LibraryOptions) {
         }
     }
     async function writeCache(movies: Movie[]) {
-        await fs.writeFile(options.cacheFile, JSON.stringify(movies, null, 2), "utf-8");
+        await fs.writeFile(`${options.cacheFile}.tmp`, JSON.stringify(movies, null, 2), "utf-8");
+        await fs.rename(`${options.cacheFile}.tmp`, options.cacheFile);
     }
     function parseMovieName(folderName: string) {
         const match = folderName.match(/^(.*?)\s*\((\d{4})\)/);
@@ -149,5 +151,38 @@ export function createLibrary(options: LibraryOptions) {
             imdbId: data.external_ids?.imdb_id ?? null,
         };
     }
-    return { loadMovies, loadDetails };
+    async function searchMatches(query: string, year?: number): Promise<MovieMatch[]> {
+        if (typeof query !== 'string' || !query.trim() || query.length > 200) throw new Error('Enter a movie title (up to 200 characters).');
+        if (year !== undefined && (!Number.isInteger(year) || year < 1888 || year > 2100)) throw new Error('Enter a year between 1888 and 2100, or leave it blank.');
+        const params = new URLSearchParams({ query: query.trim() });
+        if (year !== undefined) params.set('year', String(year));
+        const response = await fetch(`https://api.themoviedb.org/3/search/movie?${params}`, {
+            signal: AbortSignal.timeout(10000),
+            headers: { Authorization: `Bearer ${options.tmdbToken}`, Accept: 'application/json' },
+        });
+        if (!response.ok) throw new Error('Could not search TMDB. Check your connection and token, then try again.');
+        const data = await response.json() as { results?: TmdbMovie[] };
+        return (data.results ?? []).filter(movie => Number.isSafeInteger(movie.id) && movie.id > 0).map(movie => ({
+            id: movie.id, title: movie.title, year: movie.release_date ? Number(movie.release_date.slice(0, 4)) : null,
+            overview: movie.overview, posterPath: movie.poster_path,
+        }));
+    }
+    async function correctMatch(folderName: string, id: number): Promise<SavedMovieMatch> {
+        await resolveMovieFolder(options.movieFolder, folderName);
+        const details = await loadDetails(id);
+        if (details.id !== id || !details.title) throw new Error('TMDB returned an invalid movie. Try another result.');
+        const movies = await readCache();
+        const index = movies.findIndex(movie => movie.folderName === folderName);
+        if (index === -1) throw new Error('This folder is no longer in the library. Refresh the library and try again.');
+        const movie: Movie = {
+            folderName, title: details.title, year: details.year, overview: details.overview,
+            rating: details.rating, posterPath: details.posterPath, tmdbId: details.id,
+            genres: details.genres, matched: true,
+        };
+        movies[index] = movie;
+        movies.sort((a, b) => a.title.localeCompare(b.title));
+        await writeCache(movies);
+        return { movie, details };
+    }
+    return { loadMovies, loadDetails, searchMatches, correctMatch };
 }

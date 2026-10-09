@@ -27,12 +27,13 @@ Your folder and token are remembered between launches. Anyone you share the app 
 - Select **Open movie folder** in the details window to open its local folder in Windows File Explorer. This also works for unmatched movies.
 - Select **Play movie** to open a video in your Windows default player, such as VLC. If multiple videos are found, choose a file and select **Play selected video**. Video files in subfolders are included; subtitles and other non-video files are ignored.
 - Select **Open IMDb** when a link is available.
+- If the app picked the wrong film, select **Correct match** in its details. Search by title and optional year, select the right result, and choose **Save match**. This also works for unmatched folders. The choice is remembered after refreshes and restarts; local files and folder names are unchanged.
 - Use **Refresh** after adding or removing movie folders. Cached matches are reused.
 - Use **Library settings** to change the library folder or replace the token.
 
 Closing the window exits the app. It runs locally on your PC; the PC needs to be on to use it. Internet access is needed for TMDB lookups and online poster images.
 
-Manual match correction and remembered browsing preferences are planned and are not available yet.
+Remembered browsing preferences are planned and are not available yet.
 
 The first launch after adding genre filters fills in genre information for existing matches. These genres are cached for future launches. If a lookup fails, the movie remains available under **All genres** or **Unknown genre**; refresh to retry.
 
@@ -40,7 +41,7 @@ The first launch after adding genre filters fills in genre information for exist
 
 Settings and metadata caches are stored in `%APPDATA%\Movie Library`. The TMDB token is encrypted using Windows-backed Electron secure storage. Rebuilding the app or switching from the unpacked version to an installation on the same Windows account preserves these settings.
 
-If a movie is missing, check that it has its own subfolder directly inside the selected library, then refresh. If a folder cannot be opened, check that the drive is connected and the folder still exists. If metadata cannot load, check your internet connection and TMDB token. A wrong movie match cannot currently be corrected in the interface.
+If a movie is missing, check that it has its own subfolder directly inside the selected library, then refresh. If a folder cannot be opened, check that the drive is connected and the folder still exists. If metadata cannot load, check your internet connection and TMDB token. If a match search finds nothing, try another title or leave the year blank.
 
 Updates are manual: install a newly built installer or replace the complete unpacked app folder. There is no automatic updater.
 

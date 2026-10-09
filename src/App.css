@@ -99,6 +99,31 @@
 .details-status { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 12px; }
 .details-status .icon { width: 14px; height: 14px; }
 
+/* Manual TMDB matching */
+.match-editor { padding: 36px; }
+.match-editor h2 { margin: 0 35px 12px 0; font-size: 26px; }
+.match-description { color: var(--muted); font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; margin-bottom: 24px; }
+.match-description strong { color: var(--text); font-weight: 600; }
+.match-search { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }
+.match-search .form-field { flex: 1; min-width: 180px; }
+.match-search .text-input { margin-top: 8px; }
+.match-search .match-year { flex: 0 1 130px; min-width: 120px; }
+.match-result-count { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.match-results { display: grid; gap: 10px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.match-result { display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; background: var(--background); }
+.match-result:hover, .match-result:focus-within { border-color: #477d80; }
+.match-result.is-selected { border-color: var(--accent); background: #172b2e; }
+.match-result input { flex: 0 0 auto; accent-color: var(--accent); }
+.match-poster { display: grid; place-items: center; flex: 0 0 52px; width: 52px; height: 78px; overflow: hidden; border-radius: 5px; background: var(--surface-raised); color: var(--muted); }
+.match-poster img { width: 100%; height: 100%; object-fit: cover; }
+.match-result-info { display: grid; gap: 8px; min-width: 0; }
+.match-result-title { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.match-result-title span { color: var(--muted); font-weight: 400; }
+.match-result-overview { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.match-actions { display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; margin-top: 24px; padding: 16px 0 0; background: var(--surface); }
+.match-saved { color: var(--accent); font-size: 13px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
 /* Saved library preferences */
 .settings-modal { width: min(640px, calc(100% - 48px)); }
 .settings-panel { padding: 36px; }
