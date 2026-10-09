@@ -1,244 +1,119 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-
+import { useEffect, useRef, useState } from 'react';
 import type { Movie, MovieDetails } from '../shared/movies';
+import appIcon from '../resources/app.png';
 import { movieApi } from './lib/movieApi';
 import LibrarySettings from './components/LibrarySettings';
+import MovieCard from './components/MovieCard';
+import MovieDialog from './components/MovieDialog';
+import Icon from './components/Icon';
+import './App.css';
 
-function App() {
-	const [settingsOpen, setSettingsOpen] = useState(false);
-	const [movies, setMovies] = useState<Movie[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
-	const [selectedMovie, setSelectedMovie] = useState<MovieDetails | null>(null);
-	const [detailsLoading, setDetailsLoading] = useState(false);
-	const [search, setSearch] = useState("");
-	const [sortBy, setSortBy] = useState<"title" | "year" | "rating">("title");
-
-	async function openMovie(movie: Movie) {
-		if (!movie.tmdbId) {
-			return;
-		}
-
-		try {
-			setDetailsLoading(true);
-
-			const data = await movieApi.loadDetails(movie.tmdbId);
-
-			setSelectedMovie(data);
-		} catch (error) {
-			console.error(error);
-		} finally {
-			setDetailsLoading(false);
-		}
-	}
-
-	async function refreshLibrary() {
-		setLoading(true);
-		setError("");
-
-		try {
-			const data = await movieApi.loadMovies();
-
-			setMovies(data);
-		} catch (error) {
-			setError(error instanceof Error ? error.message : "Could not refresh library");
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	useEffect(() => {
-		async function loadMovies() {
-			try {
-				const data = await movieApi.loadMovies();
-				setMovies(data);
-			} catch (err) {
-				setError(err instanceof Error ? err.message : "Something went wrong");
-			} finally {
-				setLoading(false);
-			}
-		}
-
-		loadMovies();
-	}, []);
-
-	if (loading) {
-		return <div className="app">Loading movies...</div>;
-	}
-
-	if (error) {
-		return <div className="app"><p role="alert">{error}</p>{window.desktop && <LibrarySettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} />}<button className="refresh-button" onClick={refreshLibrary}>Retry</button></div>;
-	}
-
-	const filteredMovies = movies
-		.filter((movie) => {
-			const query = search.toLowerCase().trim();
-
-			if (!query) {
-				return true;
-			}
-
-			return (
-				movie.title.toLowerCase().includes(query) ||
-				movie.year?.toString().includes(query)
-			);
-		})
-		.sort((a, b) => {
-			if (sortBy === "year") {
-				return (b.year ?? 0) - (a.year ?? 0);
-			}
-
-			if (sortBy === "rating") {
-				return (b.rating ?? 0) - (a.rating ?? 0);
-			}
-
-			return a.title.localeCompare(b.title);
-		});
-
-	return (
-		<div className="app">
-			<header className="header">
-				<div>
-					<h1>My Movie Library</h1>
-					<p>
-						{filteredMovies.length} of {movies.length} movies
-					</p>
-				</div>
-
-				<div className="header-actions">
- {window.desktop && <button className="refresh-button" onClick={() => setSettingsOpen(true)}>Settings</button>}
-					<input
-						className="search-input"
-						type="text"
-						placeholder="Search movies..."
-						value={search}
-						onChange={(event) => setSearch(event.target.value)}
-					/>
-
-					<select
-						className="sort-select"
-						value={sortBy}
-						onChange={(event) =>
-							setSortBy(event.target.value as "title" | "year" | "rating")
-						}>
-						<option value="title">Title</option>
-						<option value="year">Newest</option>
-						<option value="rating">Rating</option>
-					</select>
-
-					<button className="refresh-button" onClick={refreshLibrary}>
-						Refresh Library
-					</button>
-				</div>
-			</header>
-
- {settingsOpen && <LibrarySettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} onClose={() => setSettingsOpen(false)} />}
- <main className="movie-grid">
-				{filteredMovies.map((movie) => (
-					<article
-						className="movie-card"
-						key={movie.folderName}
-						onClick={() => openMovie(movie)}>
-						{movie.posterPath ? (
-							<img
-								className="poster"
-								src={`https://image.tmdb.org/t/p/w500${movie.posterPath}`}
-								alt={movie.title}
-							/>
-						) : (
-							<div className="poster-placeholder">
-								<span>🎬</span>
-							</div>
-						)}
-
-						<div className="movie-info">
-							<h2>{movie.title}</h2>
-
-							<div className="movie-meta">
-								<span>{movie.year ?? "Unknown year"}</span>
-
-								{movie.rating !== undefined && <span>⭐ {movie.rating.toFixed(1)}</span>}
-							</div>
-
-							{movie.overview && <p className="overview">{movie.overview}</p>}
-
-							{!movie.matched && <p className="not-found">Movie not found</p>}
-						</div>
-					</article>
-				))}
-			</main>
-
-			{detailsLoading && (
-				<div className="modal-backdrop">
-					<div className="modal">
-						<p>Loading...</p>
-					</div>
-				</div>
-			)}
-
-			{selectedMovie && !detailsLoading && (
-				<div className="modal-backdrop" onClick={() => setSelectedMovie(null)}>
-					<div className="modal" onClick={(event) => event.stopPropagation()}>
-						<button className="close-button" onClick={() => setSelectedMovie(null)}>
-							×
-						</button>
-
-						{selectedMovie.backdropPath && (
-							<img
-								className="modal-backdrop-image"
-								src={`https://image.tmdb.org/t/p/w1280${selectedMovie.backdropPath}`}
-								alt=""
-							/>
-						)}
-
-						<div className="modal-content">
-							{selectedMovie.posterPath && (
-								<img
-									className="modal-poster"
-									src={`https://image.tmdb.org/t/p/w500${selectedMovie.posterPath}`}
-									alt={selectedMovie.title}
-								/>
-							)}
-
-							<div className="modal-info">
-								<h2>
-									{selectedMovie.title}
-									{selectedMovie.year && ` (${selectedMovie.year})`}
-								</h2>
-
-								<div className="details-meta">
-									<span>⭐ {selectedMovie.rating.toFixed(1)}</span>
-
-									{selectedMovie.runtime && <span>{selectedMovie.runtime} min</span>}
-								</div>
-
-								<div className="genres">
-									{selectedMovie.genres.map((genre) => (
-										<span key={genre}>{genre}</span>
-									))}
-								</div>
-
-								<p className="full-overview">
-									{selectedMovie.overview || "No description available."}
-								</p>
-
-								{selectedMovie.imdbId && (
-									<a
-										className="imdb-button"
-										href={`https://www.imdb.com/title/${selectedMovie.imdbId}/`}
-										target="_blank"
-										rel="noreferrer">
-										Open IMDb
-									</a>
-								)}
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-		</div>
-	);
+function friendlyError(error: unknown) {
+  const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+  return message.replace(/^Error invoking remote method '[^']+': (?:Error: )?/, '');
 }
 
-export default App;
+export default function App() {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState('');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [details, setDetails] = useState<MovieDetails | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState('');
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'title' | 'year' | 'rating'>('title');
+  const detailsRequest = useRef(0);
+
+  useEffect(() => {
+    let active = true;
+    movieApi.loadMovies().then(data => { if (active) setMovies(data); })
+      .catch(err => { if (active) setError(friendlyError(err)); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function refreshLibrary() {
+    setRefreshing(true);
+    setError('');
+    try { setMovies(await movieApi.loadMovies()); }
+    catch (err) { setError(friendlyError(err)); }
+    finally { setRefreshing(false); }
+  }
+
+  async function openMovie(movie: Movie) {
+    const request = ++detailsRequest.current;
+    setSelectedMovie(movie);
+    setDetails(null);
+    setDetailsError('');
+    setDetailsLoading(Boolean(movie.tmdbId));
+    if (!movie.tmdbId) return;
+    try {
+      const data = await movieApi.loadDetails(movie.tmdbId);
+      if (request === detailsRequest.current) setDetails(data);
+    } catch {
+      if (request === detailsRequest.current) setDetailsError('Could not load additional details. Check your connection and try again.');
+    } finally {
+      if (request === detailsRequest.current) setDetailsLoading(false);
+    }
+  }
+
+  function closeMovie() {
+    ++detailsRequest.current;
+    setSelectedMovie(null);
+  }
+
+  const query = search.trim().toLowerCase();
+  const filteredMovies = movies.filter(movie => !query || movie.title.toLowerCase().includes(query) || movie.year?.toString().includes(query))
+    .sort((a, b) => sortBy === 'year' ? (b.year ?? 0) - (a.year ?? 0)
+      : sortBy === 'rating' ? (b.rating ?? 0) - (a.rating ?? 0) : a.title.localeCompare(b.title));
+
+  return <div className="app">
+    <header className="header">
+      <div className="brand">
+        <img className="brand-icon" src={appIcon} alt="" />
+        <div><h1>Movie Library</h1><p>Your movies, all in one place.</p></div>
+      </div>
+      <button className="button button-quiet" onClick={() => setSettingsOpen(true)}><Icon name="settings" />Settings</button>
+    </header>
+
+    <div className="toolbar" aria-label="Library controls">
+      <div className="search-field">
+        <Icon name="search" />
+        <input className="search-input" type="search" aria-label="Search movies by title or year"
+          placeholder="Search by title or year…" value={search} onChange={event => setSearch(event.target.value)} />
+        {search && <button className="icon-button search-clear" aria-label="Clear search" onClick={() => setSearch('')}><Icon name="close" /></button>}
+      </div>
+      <div className="sort-field"><Icon name="sort" />
+        <select className="sort-select" aria-label="Sort movies" value={sortBy} onChange={event => setSortBy(event.target.value as typeof sortBy)}>
+          <option value="title">Title A–Z</option><option value="year">Newest first</option><option value="rating">Highest rated</option>
+        </select>
+      </div>
+      <button className="button refresh-button" disabled={loading || refreshing} onClick={refreshLibrary}>
+        <Icon name="refresh" className={refreshing ? 'spinning' : ''} />{refreshing ? 'Refreshing…' : 'Refresh library'}
+      </button>
+    </div>
+
+    <main id="library" aria-busy={loading || refreshing}>
+      <div className="collection-heading"><h2>Your collection</h2>
+        {!loading && <span className="collection-count" role="status">{query ? `${filteredMovies.length} of ${movies.length}` : movies.length} {filteredMovies.length === 1 && !query ? 'movie' : 'movies'}</span>}
+      </div>
+      {error && <div className="notice notice-error" role="alert"><p>{error}</p>
+        <button className="button" onClick={() => setSettingsOpen(true)}>Library settings</button>
+        <button className="button button-quiet" disabled={refreshing} onClick={refreshLibrary}>Try again</button>
+      </div>}
+      {loading ? <div className="empty-state" role="status"><span className="loading-ring" /><h3>Loading your library</h3><p>Getting your collection ready…</p></div>
+        : filteredMovies.length ? <div className="movie-grid">{filteredMovies.map(movie => <MovieCard key={movie.folderName} movie={movie} onOpen={() => void openMovie(movie)} />)}</div>
+        : !error && <div className="empty-state"><div className="empty-icon"><Icon name={query ? 'search' : 'film'} /></div>
+          <h3>{query ? 'No movies found' : 'Your collection starts here'}</h3>
+          <p>{query ? 'Try another title or year.' : 'Choose the folder containing your movie folders in Settings.'}</p>
+          <button className="button button-primary" onClick={() => query ? setSearch('') : setSettingsOpen(true)}>{query ? 'Clear search' : 'Choose movie folder'}</button>
+        </div>}
+    </main>
+
+    {settingsOpen && <LibrarySettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} onClose={() => setSettingsOpen(false)} />}
+    {selectedMovie && <MovieDialog movie={selectedMovie} details={details} loading={detailsLoading} error={detailsError} onClose={closeMovie} />}
+  </div>;
+}

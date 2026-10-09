@@ -1,16 +1,14 @@
 # Interface review and next steps
 
-The current layout works well for a small personal library. This review follows the Electron cleanup and approved icon; the visual redesign and new browsing features have not been applied yet.
+The current layout works well for a small personal library. This review follows the Electron cleanup, approved icon, and interface refresh. New local-playback and library-management features remain future work.
 
-## CSS improvements
+## Interface improvements applied
 
-1. Make the header wrap around 1000 pixels. Its responsive rules currently start at 650 pixels, below the app's 700-pixel minimum width, so the title and toolbar can crowd at practical narrow sizes.
-2. Replace the title's dark red end with a readable cyan/teal accent consistent with the approved icon. Use CSS custom properties for text, surfaces, borders, and accent colors.
-3. Fix the unmatched status color: `.movie-info p` is more specific than `.not-found`, so the warning color gets overridden. Target `.movie-info .not-found`.
-4. Consolidate duplicate `.movie-card` rules and repeated breakpoint blocks. This reduces accidental overrides as the interface grows.
-5. Add visible keyboard focus to all controls and keyboard-accessible movie cards. The current clickable articles cannot be reached or activated as buttons through the keyboard.
-6. Respect reduced-motion preferences, add long-title wrapping, and consider a dark scrollbar/color scheme for the desktop window.
-7. Use a poster-focused compact card view, with descriptions in the details window, if the user prefers to see more movies at once. Keep this as a choice rather than remove useful information.
+The Electron interface now uses a consistent dark palette with teal accents, the approved app icon, clearer Segoe UI typography, and a separate responsive toolbar. Movie cards have consistent spacing, clamped descriptions, readable status colors, real keyboard-accessible buttons, and a poster fallback.
+
+Settings and movie details use native modal dialogs with a close button, backdrop dismissal, Escape/cancel behavior, keyboard focus containment, and focus return to the opener. Search has clear and empty-result states. Refresh leaves the current grid visible; errors are shown in the interface. Reduced-motion preferences are respected.
+
+Visual checks covered 720-, 1040-, and 1440-pixel widths, saved-settings display, search results, and movie details. A compact poster-only view remains an optional future choice.
 
 ## Functional improvements, in recommended order
 
@@ -18,7 +16,7 @@ The current layout works well for a small personal library. This review follows 
 2. **Play movie** in the Windows default player. Identify video files inside each movie folder and allow choosing one when there are multiple; do not assume the first file is the movie.
 3. **Watched/unwatched and favorites**, saved locally, with filters. This helps pick a movie rather than just inventory the library.
 4. **Correct a wrong TMDB match** and retry unmatched movies. The current service always chooses the first search result and retains failed matches in cache.
-5. **Better refresh behavior**: keep the existing grid visible while rescanning, show any failure clearly, and keep the user's sort choice between launches.
+5. **Remember the sort choice between launches**. The interface now keeps the grid visible while refreshing and displays any failure.
 6. **Offline details/posters**: cache full details and downloaded posters so the existing collection stays pleasant to browse without internet.
 
-Additional reliability work: show details-fetch errors in the interface instead of only the console; support Escape and focus management in the movie popup; limit TMDB request concurrency and use request timeouts for larger libraries. These can be addressed with the corresponding UI or matching feature rather than bundle them into the structure cleanup.
+Additional reliability work: limit TMDB request concurrency and use request timeouts for larger libraries. Details-fetch errors, dialog cancellation, and focus management have been addressed in the interface refresh.
