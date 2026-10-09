@@ -8,7 +8,7 @@
     "start": "electron .",
     "build": "node scripts/clean-build.mjs && tsc -b && vite build && tsc -p tsconfig.desktop.json",
     "lint": "eslint .",
-    "test": "node --import tsx --test tests/library.test.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
     "package": "npm run build && electron-builder --win nsis",
     "package:dir": "npm run build && electron-builder --win --dir",
     "verify:desktop": "electron . --verify-settings",

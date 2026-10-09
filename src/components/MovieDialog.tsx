@@ -1,10 +1,25 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import type { Movie, MovieDetails } from '../../shared/movies';
 import Dialog from './Dialog';
 import Icon from './Icon';
+import { movieApi } from '../lib/movieApi';
 
 export default function MovieDialog({ movie, details, loading, error, onClose }: { movie: Movie; details: MovieDetails | null; loading: boolean; error: string; onClose: () => void }) {
   const titleId = useId();
+  const [openingFolder, setOpeningFolder] = useState(false);
+  const [folderError, setFolderError] = useState('');
+  async function openFolder() {
+    setOpeningFolder(true);
+    setFolderError('');
+    try {
+      await movieApi.openMovieFolder(movie.folderName);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not open this movie folder.';
+      setFolderError(message.replace(/^Error invoking remote method '[^']+': Error: /, ''));
+    } finally {
+      setOpeningFolder(false);
+    }
+  }
   const data = details ?? movie;
   return <Dialog titleId={titleId} onClose={onClose} className="movie-dialog">
     {details?.backdropPath && <div className="detail-hero"><img className="modal-backdrop-image" src={`https://image.tmdb.org/t/p/w1280${details.backdropPath}`} alt="" /></div>}
@@ -21,7 +36,11 @@ export default function MovieDialog({ movie, details, loading, error, onClose }:
         {!movie.matched && <p className="not-found">This folder has not been matched to a movie yet.</p>}
         {loading && <p className="details-status" role="status"><Icon name="refresh" className="spinning" />Loading additional details…</p>}
         {error && <p className="notice notice-error" role="alert">{error}</p>}
-        {details?.imdbId && <a className="button imdb-button" href={`https://www.imdb.com/title/${details.imdbId}/`} target="_blank" rel="noreferrer">Open IMDb<Icon name="arrow" /></a>}
+        {folderError && <p className="notice notice-error" role="alert">{folderError}</p>}
+        <div className="movie-actions">
+          <button className="button" onClick={() => void openFolder()} disabled={openingFolder}><Icon name="folder" />{openingFolder ? 'Opening…' : 'Open movie folder'}</button>
+          {details?.imdbId && <a className="button imdb-button" href={`https://www.imdb.com/title/${details.imdbId}/`} target="_blank" rel="noreferrer">Open IMDb<Icon name="arrow" /></a>}
+        </div>
       </div>
     </div>
   </Dialog>;

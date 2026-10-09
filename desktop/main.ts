@@ -4,6 +4,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { createLibrary } from './services/library.js';
+import { openMovieFolder } from './services/local-files.js';
 
 app.setName('Movie Library');
 if (process.platform === 'win32') app.setAppUserModelId('com.coolbylaki.movielibrary');
@@ -55,6 +56,7 @@ function registerHandlers() {
     return pendingScan;
   });
   handle('library:details', (id: number) => library().loadDetails(id));
+  handle('library:open-folder', (folderName: string) => openMovieFolder(settings.movieFolder, folderName, folder => shell.openPath(folder)));
   handle('settings:get', () => ({ movieFolder: settings.movieFolder, hasToken: Boolean(settings.encryptedToken) }));
   handle('settings:folder', async () => {
     const result = await dialog.showOpenDialog(window!, { title: 'Choose your movie library', properties: ['openDirectory'] });

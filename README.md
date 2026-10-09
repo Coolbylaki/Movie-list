@@ -1,61 +1,70 @@
 # Movie Library
 
-A personal Windows desktop movie browser built with Electron, React, and TypeScript. It reads movie folders on your PC and uses TMDB for posters and metadata. It does not modify or move your movies.
+Browse your local movie collection in a Windows desktop app, with posters, descriptions, ratings, and movie details from TMDB. Movie Library reads your folders without moving or changing your movies.
 
-## Using the app
+## Install and launch
 
-Open **Movie Library** from the desktop shortcut. The app runs in its own window; closing the window closes the app. No browser or separate server is needed.
+Use **Movie Library Setup 0.1.0.exe** from the built `release` folder to install the app. The installer creates desktop and Start menu shortcuts and provides a Windows uninstaller. The app includes everything it needs; you do not need Node.js, a browser, or a separate server.
 
-Choose your movie folder and enter your TMDB **API read access token** once in Settings. Both are saved for future launches. Folder names such as `The Matrix (1999)` produce the best matches. The library supports title/year search, title/year/rating sorting, refresh, details, and IMDb links.
+If someone shares the app with you, ask for the installer. Build files are not currently published as GitHub release downloads. The app is unsigned, so Windows may show a publisher warning.
 
-Settings and per-folder metadata caches live in `%APPDATA%\Movie Library`. The token is encrypted using Windows-backed Electron safe storage. Changing or rebuilding the project does not erase these files. Online posters and fresh TMDB metadata require an internet connection.
+You can also run **Movie Library.exe** from `release/win-unpacked`. Keep that entire folder together. This is useful while testing updates; the current development desktop shortcut launches this copy. Installing provides a normal installation location, but the features are the same.
 
-The desktop shortcut points to `release/win-unpacked/Movie Library.exe`; keep the entire `win-unpacked` folder. Alternatively, use the installer in `release`, which creates desktop and Start menu shortcuts. The app is unsigned.
+## First-time setup
+
+1. Open **Movie Library** and go to **Library settings**.
+2. Choose the folder containing your movie folders. Each movie should have its own immediate subfolder; names such as `The Matrix (1999)` help matching. Nested collections and loose video files in the library root are not scanned.
+3. Enter your own TMDB **API read access token**, available in your TMDB account's API settings.
+4. Select **Save and load library**.
+
+Your folder and token are remembered between launches. Anyone you share the app with needs to choose their own library and enter their own token. Your personal settings are not included in the installer.
+
+## Browse your movies
+
+- Search by title or year, and sort by title, newest year, or highest rating.
+- Select a movie to see its description, runtime, genres, and rating when available.
+- Select **Open movie folder** in the details window to open its local folder in Windows File Explorer. This also works for unmatched movies.
+- Select **Open IMDb** when a link is available.
+- Use **Refresh** after adding or removing movie folders. Cached matches are reused.
+- Use **Library settings** to change the library folder or replace the token.
+
+Closing the window exits the app. It runs locally on your PC; the PC needs to be on to use it. Internet access is needed for TMDB lookups and online poster images.
+
+Playback, additional filters, manual match correction, and remembered browsing preferences are planned and are not available yet.
+
+## Settings and troubleshooting
+
+Settings and metadata caches are stored in `%APPDATA%\Movie Library`. The TMDB token is encrypted using Windows-backed Electron secure storage. Rebuilding the app or switching from the unpacked version to an installation on the same Windows account preserves these settings.
+
+If a movie is missing, check that it has its own subfolder directly inside the selected library, then refresh. If a folder cannot be opened, check that the drive is connected and the folder still exists. If metadata cannot load, check your internet connection and TMDB token. A wrong movie match cannot currently be corrected in the interface.
+
+Updates are manual: install a newly built installer or replace the complete unpacked app folder. There is no automatic updater.
 
 ## Development
 
+The app uses Electron, React, and TypeScript. Source code is maintained on `main`.
+
 - `npm install`: install dependencies.
 - `npm run dev`: build and launch Electron.
-- `npm start`: open the existing build.
-- `npm run build`: clean generated output, check TypeScript, build the interface and desktop code.
+- `npm start`: launch the existing build.
+- `npm run build`: check TypeScript and build the interface and desktop code.
 - `npm run package`: build the Windows installer.
 - `npm run package:dir`: build the unpacked Windows app.
-- `npm run verify:desktop`: run a hidden check against saved settings; output goes to `release/checks`.
-- `npm test`: check scanning, caching, and TMDB metadata with isolated fixtures.
+- `npm test`: check scanning, caching, matching, and local folder access.
 - `npm run lint`: check source code.
+- `npm run verify:desktop`: run a hidden check using saved settings; results go to `release/checks`.
 - `npm run build:icon`: rebuild the Windows icon from the approved PNG.
 
-The packaged app is self-contained and does not require Node.js or this source checkout's dependencies.
-
-## Project structure
-
 ```text
-desktop/
-  main.ts                 Window, saved settings, secure desktop handlers
-  preload.cjs             Restricted API exposed to React
-  services/library.ts     Folder scanning, TMDB metadata, caching
-src/
-  App.tsx                 Library interface
-  components/             Reusable interface components
-  lib/                    Calls to the desktop API
-  types/                  Desktop API declaration for the interface
-  App.css, index.css      Styles
-shared/                   Movie and desktop API types
-resources/                Approved app icon and generation prompt
-scripts/                  Build cleanup and Windows icon conversion
-tests/                    Movie-service regression tests
+desktop/       Electron window, settings, local folder access, and TMDB services
+src/           React interface, components, and styles
+shared/        Movie and desktop API types
+resources/     App icon assets
+scripts/       Build utilities
+tests/         Service regression tests
+docs/          Agreed feature roadmap
 ```
 
-Vite builds the React interface; it is not a separate production web server. Electron uses context isolation and a sandboxed renderer with no renderer Node access. Only supported IMDb title links open externally. Tokens stay in the main process. Concurrent scans share one request.
+The renderer is sandboxed, with context isolation and no direct Node.js access. Desktop actions use a restricted preload API; tokens stay in the main process.
 
-`dist`, `dist-desktop`, `release`, and `node_modules` are generated and excluded from Git. Build cleanup only removes `dist` and `dist-desktop`, not packaged apps or saved user data.
-
-## Version control and local data
-
-The current Electron app is maintained on `main`, the repository's only active branch. Earlier versions remain in Git history.
-
-The ignored `.local-backup` directory contains old browser-version configuration and metadata retained locally. It is not used by the desktop app or included in its installer. Active settings and caches remain in your Windows user profile.
-
-## Next improvements
-
-See `docs/next-steps.md` for the CSS review and proposed movie-browsing features.
+`dist`, `dist-desktop`, `release`, and `node_modules` are generated and excluded from Git. The ignored `.local-backup` contains legacy browser-version data retained only on the development PC; it is not used or packaged. Build cleanup preserves packaged apps and saved user settings.

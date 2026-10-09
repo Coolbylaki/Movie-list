@@ -83,7 +83,8 @@
 .genres { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 22px; }
 .genres span { padding: 5px 9px; border: 1px solid #344650; border-radius: 6px; background: #1b2a31; color: #c8d6dd; font-size: 11px; }
 .full-overview { margin: 0 0 24px; font-size: 14px; line-height: 1.8; color: #c3ced7; }
-.imdb-button { margin-top: 5px; background: #eac35e; border-color: #eac35e; color: #17160e; }
+.movie-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.imdb-button { background: #eac35e; border-color: #eac35e; color: #17160e; }
 .button.imdb-button:hover { background: #f5d886; border-color: #f5d886; }
 .details-status { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 12px; }
 .details-status .icon { width: 14px; height: 14px; }

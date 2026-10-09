@@ -5,6 +5,7 @@ export type SettingsInput = { movieFolder: string; tmdbToken: string };
 export type DesktopApi = {
   loadMovies(): Promise<Movie[]>;
   loadDetails(id: number): Promise<MovieDetails>;
+  openMovieFolder(folderName: string): Promise<void>;
   getSettings(): Promise<LibrarySettings>;
   saveSettings(settings: SettingsInput): Promise<void>;
   chooseFolder(): Promise<string | null>;

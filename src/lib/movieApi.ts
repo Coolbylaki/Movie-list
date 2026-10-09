@@ -6,4 +6,5 @@ function desktopApi(): DesktopApi {
 export const movieApi = {
   loadMovies: async () => desktopApi().loadMovies(),
   loadDetails: async (id: number) => desktopApi().loadDetails(id),
+  openMovieFolder: async (folderName: string) => desktopApi().openMovieFolder(folderName),
 };
