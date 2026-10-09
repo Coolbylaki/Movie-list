@@ -1,4 +1,5 @@
 import type { Movie, MovieDetails, MovieMatch, SavedMovieMatch } from './movies.js';
+import type { BrowsingPreferences } from './preferences.js';
 
 export type LibrarySettings = { movieFolder: string; hasToken: boolean };
 export type SettingsInput = { movieFolder: string; tmdbToken: string };
@@ -14,4 +15,6 @@ export type DesktopApi = {
   getSettings(): Promise<LibrarySettings>;
   saveSettings(settings: SettingsInput): Promise<void>;
   chooseFolder(): Promise<string | null>;
+  getBrowsingPreferences(): Promise<BrowsingPreferences>;
+  saveBrowsingPreferences(preferences: BrowsingPreferences): Promise<void>;
 };

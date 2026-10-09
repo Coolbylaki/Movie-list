@@ -1,4 +1,5 @@
 import type { DesktopApi } from '../../shared/desktop';
+import type { BrowsingPreferences } from '../../shared/preferences';
 function desktopApi(): DesktopApi {
   if (!window.desktop) throw new Error('Please open Movie Library from the desktop app.');
   return window.desktop;
@@ -11,4 +12,6 @@ export const movieApi = {
   openMovieFolder: async (folderName: string) => desktopApi().openMovieFolder(folderName),
   listMovieVideos: async (folderName: string) => desktopApi().listMovieVideos(folderName),
   playMovieVideo: async (folderName: string, relativePath: string) => desktopApi().playMovieVideo(folderName, relativePath),
+  getBrowsingPreferences: async () => desktopApi().getBrowsingPreferences(),
+  saveBrowsingPreferences: async (preferences: BrowsingPreferences) => desktopApi().saveBrowsingPreferences(preferences),
 };

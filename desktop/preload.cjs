@@ -10,4 +10,6 @@ contextBridge.exposeInMainWorld('desktop', {
   getSettings: () => ipcRenderer.invoke('settings:get'),
   saveSettings: (settings) => ipcRenderer.invoke('settings:save', settings),
   chooseFolder: () => ipcRenderer.invoke('settings:folder'),
+  getBrowsingPreferences: () => ipcRenderer.invoke('preferences:get'),
+  saveBrowsingPreferences: (preferences) => ipcRenderer.invoke('preferences:save', preferences),
 });

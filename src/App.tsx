@@ -3,6 +3,7 @@ import type { Movie, MovieDetails, SavedMovieMatch } from '../shared/movies';
 import appIcon from '../resources/app.png';
 import { movieApi } from './lib/movieApi';
 import { emptyFilters, filterMovies, type LibraryFilters } from './lib/libraryFilters';
+import { defaultBrowsingPreferences, normalizeBrowsingPreferences, type BrowsingPreferences } from '../shared/preferences';
 import LibrarySettings from './components/LibrarySettings';
 import MovieCard from './components/MovieCard';
 import MovieDialog from './components/MovieDialog';
@@ -25,8 +26,14 @@ export default function App() {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState('');
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'title' | 'year' | 'rating'>('title');
-  const [filters, setFilters] = useState<LibraryFilters>(emptyFilters);
+  const [preferences, setPreferences] = useState<BrowsingPreferences>(defaultBrowsingPreferences);
+  const [preferencesReady, setPreferencesReady] = useState(false);
+  const [preferencesError, setPreferencesError] = useState('');
+  const lastSavedPreferences = useRef('');
+  const sortBy = preferences.sortBy;
+  const filters: LibraryFilters = preferences;
+  function setSortBy(sortBy: BrowsingPreferences['sortBy']) { setPreferences(previous => ({ ...previous, sortBy })); }
+  function setFilters(filters: LibraryFilters) { setPreferences(previous => ({ ...previous, ...filters })); }
   const detailsRequest = useRef(0);
   const activeDialogFolder = useRef<string | null>(null);
 
@@ -37,6 +44,30 @@ export default function App() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    movieApi.getBrowsingPreferences().then(saved => {
+      if (!active) return;
+      const normalized = normalizeBrowsingPreferences(saved);
+      lastSavedPreferences.current = JSON.stringify(normalized);
+      setPreferences(normalized);
+    }).catch(() => {
+      if (!active) return;
+      lastSavedPreferences.current = JSON.stringify(defaultBrowsingPreferences);
+      setPreferencesError('Could not restore browsing preferences. Your next changes will be saved automatically.');
+    }).finally(() => { if (active) setPreferencesReady(true); });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!preferencesReady) return;
+    const serialized = JSON.stringify(preferences);
+    if (serialized === lastSavedPreferences.current) return;
+    lastSavedPreferences.current = serialized;
+    void movieApi.saveBrowsingPreferences(preferences).then(() => setPreferencesError(''))
+      .catch(() => setPreferencesError('Could not save browsing preferences. Try changing the sort or filters again.'));
+  }, [preferences, preferencesReady]);
 
   async function refreshLibrary() {
     setRefreshing(true);
@@ -107,7 +138,7 @@ export default function App() {
         {search && <button className="icon-button search-clear" aria-label="Clear search" onClick={() => setSearch('')}><Icon name="close" /></button>}
       </div>
       <div className="sort-field"><Icon name="sort" />
-        <select className="sort-select" aria-label="Sort movies" value={sortBy} onChange={event => setSortBy(event.target.value as typeof sortBy)}>
+        <select className="sort-select" aria-label="Sort movies" value={sortBy} disabled={!preferencesReady} onChange={event => setSortBy(event.target.value as typeof sortBy)}>
           <option value="title">Title A–Z</option><option value="year">Newest first</option><option value="rating">Highest rated</option>
         </select>
       </div>
@@ -118,27 +149,28 @@ export default function App() {
 
     <div className="filter-bar" role="group" aria-label="Filter movies">
       <div className="filter-field"><label htmlFor="genre-filter">Genre</label>
-        <select id="genre-filter" value={filters.genre} onChange={event => setFilters({ ...filters, genre: event.target.value })}>
+        <select id="genre-filter" value={filters.genre} disabled={!preferencesReady} onChange={event => setFilters({ ...filters, genre: event.target.value })}>
           <option value="">All genres</option>{genres.map(genre => <option key={genre} value={genre}>{genre}</option>)}
           {filters.genre && filters.genre !== '__unknown__' && !genres.includes(filters.genre) && <option value={filters.genre}>{filters.genre}</option>}
           <option value="__unknown__">Unknown genre</option>
         </select>
       </div>
       <div className="filter-field"><label htmlFor="year-filter">Year</label>
-        <select id="year-filter" value={filters.year} onChange={event => setFilters({ ...filters, year: event.target.value })}>
+        <select id="year-filter" value={filters.year} disabled={!preferencesReady} onChange={event => setFilters({ ...filters, year: event.target.value })}>
           <option value="">All years</option>{years.map(year => <option key={year} value={year}>{year}</option>)}
           {filters.year && filters.year !== '__unknown__' && !years.includes(Number(filters.year)) && <option value={filters.year}>{filters.year}</option>}
           <option value="__unknown__">Unknown year</option>
         </select>
       </div>
       <div className="filter-field"><label htmlFor="rating-filter">Minimum rating</label>
-        <select id="rating-filter" value={filters.minimumRating} onChange={event => setFilters({ ...filters, minimumRating: event.target.value })}>
+        <select id="rating-filter" value={filters.minimumRating} disabled={!preferencesReady} onChange={event => setFilters({ ...filters, minimumRating: event.target.value })}>
           <option value="">Any rating</option>{[5, 6, 7, 8, 9].map(rating => <option key={rating} value={rating}>{rating}+ / 10</option>)}
         </select>
       </div>
       <button className="button button-quiet clear-filters" disabled={!hasFilters} onClick={() => setFilters(emptyFilters)}><Icon name="close" />Clear filters</button>
     </div>
 
+    {preferencesError && <p className="notice notice-error" role="alert">{preferencesError}</p>}
     <main id="library" aria-busy={loading || refreshing}>
       <div className="collection-heading"><h2>Your collection</h2>
         {!loading && <span className="collection-count" role="status">{narrowed ? `${filteredMovies.length} of ${movies.length}` : movies.length} {filteredMovies.length === 1 && !narrowed ? 'movie' : 'movies'}</span>}

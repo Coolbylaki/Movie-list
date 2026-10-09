@@ -33,13 +33,15 @@ Your folder and token are remembered between launches. Anyone you share the app 
 
 Closing the window exits the app. It runs locally on your PC; the PC needs to be on to use it. Internet access is needed for TMDB lookups and online poster images.
 
-Remembered browsing preferences are planned and are not available yet.
+Your sort order and genre, year, and minimum-rating filters are saved automatically and restored when you reopen the app. Search text starts blank on each launch. **Clear filters** also saves the cleared state while preserving your sort order.
 
 The first launch after adding genre filters fills in genre information for existing matches. These genres are cached for future launches. If a lookup fails, the movie remains available under **All genres** or **Unknown genre**; refresh to retry.
 
 ## Settings and troubleshooting
 
 Settings and metadata caches are stored in `%APPDATA%\Movie Library`. The TMDB token is encrypted using Windows-backed Electron secure storage. Rebuilding the app or switching from the unpacked version to an installation on the same Windows account preserves these settings.
+
+Browsing choices are stored separately in `browsing-preferences.json` in the same directory. Saved filters that no longer match your collection may show an empty result; use **Clear filters** to see all movies again.
 
 If a movie is missing, check that it has its own subfolder directly inside the selected library, then refresh. If a folder cannot be opened, check that the drive is connected and the folder still exists. If metadata cannot load, check your internet connection and TMDB token. If a match search finds nothing, try another title or leave the year blank.
 

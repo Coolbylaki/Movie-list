@@ -5,6 +5,8 @@ import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { createLibrary } from './services/library.js';
 import { listMovieVideos, openMovieFolder, playMovieVideo } from './services/local-files.js';
+import { createPreferencesStore } from './services/preferences.js';
+import type { BrowsingPreferences } from '../shared/preferences.js';
 
 app.setName('Movie Library');
 if (process.platform === 'win32') app.setAppUserModelId('com.coolbylaki.movielibrary');
@@ -13,6 +15,7 @@ const verifySettings = process.argv.includes('--verify-settings');
 const smoke = verifySettings;
 const dataDir = app.getPath('userData');
 const settingsFile = path.join(dataDir, 'settings.json');
+const browsingPreferences = createPreferencesStore(path.join(dataDir, 'browsing-preferences.json'));
 type Settings = { movieFolder: string; encryptedToken: string };
 let settings: Settings = { movieFolder: '', encryptedToken: '' };
 let window: BrowserWindow | null = null;
@@ -68,6 +71,8 @@ function registerHandlers() {
   handle('library:videos', (folderName: string) => listMovieVideos(settings.movieFolder, folderName));
   handle('library:play', (folderName: string, relativePath: string) => playMovieVideo(settings.movieFolder, folderName, relativePath, file => shell.openPath(file)));
   handle('settings:get', () => ({ movieFolder: settings.movieFolder, hasToken: Boolean(settings.encryptedToken) }));
+  handle('preferences:get', () => browsingPreferences.load());
+  handle('preferences:save', (preferences: BrowsingPreferences) => browsingPreferences.save(preferences));
   handle('settings:folder', async () => {
     const result = await dialog.showOpenDialog(window!, { title: 'Choose your movie library', properties: ['openDirectory'] });
     return result.canceled ? null : result.filePaths[0];
@@ -95,6 +100,13 @@ async function createWindow() {
   });
   window.webContents.on('will-navigate', (event, url) => { if (url !== rendererUrl) event.preventDefault(); });
   window.once('ready-to-show', () => { if (!smoke) window?.show(); });
+  let closingAfterSave = false;
+  window.on('close', event => {
+    if (!closingAfterSave && browsingPreferences.hasPendingSaves()) {
+      event.preventDefault();
+      void browsingPreferences.flush().finally(() => { closingAfterSave = true; window?.close(); });
+    }
+  });
   window.on('closed', () => { window = null; });
   await window.loadURL(rendererUrl);
   if (smoke) {
