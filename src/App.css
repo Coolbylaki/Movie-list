@@ -306,3 +306,9 @@
 	color: white;
 	font-size: 14px;
 }
+
+.settings-panel { padding: 24px; margin-bottom: 24px; background: #1b1b1b; border: 1px solid #333; border-radius: 12px; }
+.settings-panel p { color: #bbb; }
+.settings-panel form { display: grid; gap: 12px; }
+.settings-panel .search-input { width: 100%; }
+.settings-folder { display: flex; gap: 10px; }

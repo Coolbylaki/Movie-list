@@ -1,31 +1,12 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-type Movie = {
-	folderName: string;
-	title: string;
-	year: number | null;
-	overview?: string;
-	rating?: number;
-	posterPath?: string | null;
-	tmdbId?: number;
-	matched: boolean;
-};
-
-type MovieDetails = {
-	id: number;
-	title: string;
-	year: number | null;
-	overview: string;
-	rating: number;
-	runtime: number | null;
-	genres: string[];
-	posterPath: string | null;
-	backdropPath: string | null;
-	imdbId: string | null;
-};
+import type { Movie, MovieDetails } from '../shared/movies';
+import { movieApi } from './movieApi';
+import DesktopSettings from './DesktopSettings';
 
 function App() {
+	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [movies, setMovies] = useState<Movie[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
@@ -42,13 +23,7 @@ function App() {
 		try {
 			setDetailsLoading(true);
 
-			const response = await fetch(`/api/movies/${movie.tmdbId}`);
-
-			if (!response.ok) {
-				throw new Error("Failed to load movie details");
-			}
-
-			const data: MovieDetails = await response.json();
+			const data = await movieApi.loadDetails(movie.tmdbId);
 
 			setSelectedMovie(data);
 		} catch (error) {
@@ -60,19 +35,14 @@ function App() {
 
 	async function refreshLibrary() {
 		setLoading(true);
+		setError("");
 
 		try {
-			const response = await fetch("/api/movies");
-
-			if (!response.ok) {
-				throw new Error("Failed to refresh library");
-			}
-
-			const data: Movie[] = await response.json();
+			const data = await movieApi.loadMovies();
 
 			setMovies(data);
 		} catch (error) {
-			console.error(error);
+			setError(error instanceof Error ? error.message : "Could not refresh library");
 		} finally {
 			setLoading(false);
 		}
@@ -81,13 +51,7 @@ function App() {
 	useEffect(() => {
 		async function loadMovies() {
 			try {
-				const response = await fetch("/api/movies");
-
-				if (!response.ok) {
-					throw new Error("Failed to load movies");
-				}
-
-				const data: Movie[] = await response.json();
+				const data = await movieApi.loadMovies();
 				setMovies(data);
 			} catch (err) {
 				setError(err instanceof Error ? err.message : "Something went wrong");
@@ -104,7 +68,7 @@ function App() {
 	}
 
 	if (error) {
-		return <div className="app">Error: {error}</div>;
+		return <div className="app"><p role="alert">{error}</p>{window.desktop && <DesktopSettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} />}<button className="refresh-button" onClick={refreshLibrary}>Retry</button></div>;
 	}
 
 	const filteredMovies = movies
@@ -143,6 +107,7 @@ function App() {
 				</div>
 
 				<div className="header-actions">
+ {window.desktop && <button className="refresh-button" onClick={() => setSettingsOpen(true)}>Settings</button>}
 					<input
 						className="search-input"
 						type="text"
@@ -168,7 +133,8 @@ function App() {
 				</div>
 			</header>
 
-			<main className="movie-grid">
+			{settingsOpen && <DesktopSettings onSaved={() => { setSettingsOpen(false); void refreshLibrary(); }} onClose={() => setSettingsOpen(false)} />}
+ <main className="movie-grid">
 				{filteredMovies.map((movie) => (
 					<article
 						className="movie-card"

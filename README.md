@@ -1,75 +1,40 @@
-# React + TypeScript + Vite
+# Movie Library
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A personal Windows movie browser built with React, TypeScript, and Electron. It reads movie folders on your PC and uses TMDB for posters and metadata. It does not move or modify movie files.
 
-Currently, two official plugins are available:
+## Desktop use
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Launch **Movie Library** from your desktop shortcut. No terminal, browser tab, or separately running server is needed. Closing the window closes the app.
 
-## React Compiler
+Use **Settings** to select the folder containing your movie folders and configure a TMDB **API read access token**. Folder names such as `The Matrix (1999)` produce the best matches. Search, sorting, refresh, movie details, and IMDb links work as in the browser version.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Settings and metadata live in `%APPDATA%\Movie Library`. The token is encrypted using Windows-backed Electron safe storage. Each library folder gets its own cache. Posters and uncached metadata need an internet connection.
 
-## Expanding the ESLint configuration
+A first development launch imports `.env.local` and `movie-cache.json` once. Neither file is included in the installer. An installation on another PC asks for its own folder and token.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The local shortcut can point to `release/win-unpacked/Movie Library.exe`; keep the whole `win-unpacked` folder together. For a regular installation, run `release/Movie Library Setup 0.1.0.exe`. The installer creates desktop and Start menu shortcuts. The app is unsigned.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Development
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- `npm install` — install dependencies.
+- `npm run desktop` — build and open the desktop app.
+- `npm run dev` — retain the original Vite + Express browser workflow.
+- `npm run dist:desktop` — build the Windows installer.
+- `npm run pack:desktop` — build the unpacked Windows app.
+- `npm test` — verify movie scanning, caching, and TMDB metadata with isolated fixtures.
+- `npm run lint` — check source code.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Structure
 
-```
+- `desktop/main.ts`: Electron window, settings, folder picker, and restricted IPC handlers.
+- `desktop/preload.cjs`: narrow desktop API exposed to React.
+- `server/library.ts`: shared scanning, TMDB matching, and cache services.
+- `server/index.ts`: Express adapter for the existing browser version.
+- `shared/movies.ts`: shared movie types.
+- `src/`: React interface and desktop settings.
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Electron uses a sandboxed renderer with context isolation and no renderer Node access. Only IMDb title links can open externally. Credentials stay in the main process. Concurrent scans share one request to avoid overlapping cache writes.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Restore the original version
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+The working browser version is preserved on `main` at commit `8b09fb1`. Electron changes are on `codex/electron-desktop`. After saving any further work, switch to `main` and use the original launcher. Local `.env.local`, the original cache, and movie files are preserved.
